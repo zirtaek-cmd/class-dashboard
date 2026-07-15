@@ -294,17 +294,21 @@
     const noticeRef = doc(db, "notices", selectedClassId);
     const existing = (await getDoc(noticeRef)).data();
     const carryOver =
-      existing && existing.date !== todayIso()
-        ? { prevText: existing.text, prevDate: existing.date }
+      existing && existing.date && existing.date !== todayIso()
+        ? { prevText: existing.text ?? "", prevDate: existing.date }
         : { prevText: existing?.prevText ?? "", prevDate: existing?.prevDate ?? "" };
-    await setDoc(noticeRef, {
-      text: noticeText.value,
-      date: todayIso(),
-      ...carryOver,
-    });
-    const feedback = document.getElementById("notice-feedback");
-    feedback.hidden = false;
-    setTimeout(() => (feedback.hidden = true), 2000);
+    try {
+      await setDoc(noticeRef, {
+        text: noticeText.value,
+        date: todayIso(),
+        ...carryOver,
+      });
+      const feedback = document.getElementById("notice-feedback");
+      feedback.hidden = false;
+      setTimeout(() => (feedback.hidden = true), 2000);
+    } catch (err) {
+      alert("공지 저장에 실패했습니다: " + err.message);
+    }
   });
 
   document.getElementById("call-send-btn").addEventListener("click", async () => {
