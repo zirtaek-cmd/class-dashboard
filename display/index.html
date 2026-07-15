@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>학급 대시보드</title>
+<link rel="stylesheet" as="style" crossorigin
+  href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<style>
+  :root {
+    --font-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+    --color-bg: #f7f7fb;
+    --color-surface: #ffffff;
+    --color-border: #e5e7eb;
+    --color-text: #18181b;
+    --color-text-muted: #6b7280;
+    --color-ink: #6366f1;
+    --color-accent-soft: #eef2ff;
+    --radius: 20px;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 10px 28px rgba(0,0,0,.05);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  html { font-size: 27px; }
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    color: var(--color-text);
+    background: var(--color-bg);
+    line-height: 1.85;
+    overflow: hidden;
+  }
+  h1, h2 { font-family: inherit; }
+  [hidden] { display: none !important; }
+
+  #class-select-screen {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    padding: 24px;
+    background: linear-gradient(180deg, #ffffff 0%, var(--color-accent-soft) 100%);
+  }
+  #class-select-screen h1 {
+    font-size: clamp(1.8rem, 3vw, 2.4rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin: 0 0 8px;
+  }
+  .grade-group { display: flex; gap: 14px; align-items: center; }
+  .grade-group h2 {
+    width: 88px;
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-align: right;
+  }
+  .class-btn {
+    min-width: 76px;
+    min-height: 76px;
+    border: 2px solid var(--color-border);
+    border-radius: 14px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-family: inherit;
+    font-size: 1.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+  }
+  .class-btn:hover, .class-btn:active {
+    background: var(--color-ink);
+    border-color: var(--color-ink);
+    color: #fff;
+  }
+
+  #dashboard {
+    height: 100vh;
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+  }
+  #col-left, #col-center, #col-right {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-height: 0;
+  }
+  #col-left { flex: 1 1 0; }
+  #col-center { flex: 1.4 1 0; }
+  #col-right { flex: 1 1 0; }
+  section {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 22px 26px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  section h2 {
+    flex-shrink: 0;
+    margin: 0 0 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--color-border);
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--color-text);
+  }
+  section .content {
+    font-size: 1.25rem;
+    line-height: 1.85;
+  }
+  section .content div { padding: 6px 0; }
+
+  /* 날씨/시간표는 내용이 고정 길이라 자연스러운 높이만 차지하고,
+     급식/학사일정은 칼럼 바닥까지 늘어남. 스크롤 없이 한눈에 보이도록
+     급식/시간표는 글자를 조금 작게 잡아 카드 높이를 줄임 */
+  #weather, #timetable { flex: 0 0 auto; }
+  #meal, #calendar { flex: 1 1 0; }
+  #meal .content, #calendar .content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+  #meal .content {
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+  #meal .content div { padding: 8px 0; }
+  #timetable .content, #calendar .content {
+    font-size: 0.95rem;
+    line-height: 1.4;
+  }
+  #timetable .content div, #calendar .content div { padding: 2px 0; }
+
+  #weather .content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .weather-icon {
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+    border-radius: 16px;
+    background: var(--color-accent-soft);
+    color: var(--color-ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .weather-icon svg { width: 36px; height: 36px; }
+  #weather .content .weather-text div { padding: 2px 0; }
+
+  #notice {
+    flex: 1 1 0;
+    background: var(--color-ink);
+    border-color: var(--color-ink);
+    color: #fff;
+  }
+  #notice h2 { flex-shrink: 0; color: #fff; border-bottom-color: rgba(255,255,255,.25); }
+  #notice .content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #fff;
+    white-space: pre-wrap;
+  }
+
+  #notice-yesterday {
+    flex: 0 0 auto;
+    min-height: 260px;
+    max-height: 30%;
+  }
+  #notice-yesterday h2 {
+    font-size: 1.05rem;
+    color: var(--color-text-muted);
+  }
+  #notice-yesterday .content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    font-size: 1rem;
+    color: var(--color-text-muted);
+    white-space: pre-wrap;
+  }
+
+  #call-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: rgba(15, 15, 25, 0.45);
+  }
+
+  #call-popup-area {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+  }
+  .call-card {
+    width: min(520px, 88vw);
+    background: var(--color-surface);
+    border-radius: 28px;
+    box-shadow: 0 24px 64px rgba(0,0,0,.35);
+    padding: 44px 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+    text-align: center;
+  }
+  .call-memo { font-size: 1.5rem; font-weight: 700; line-height: 1.6; }
+  .call-confirm-btn {
+    flex-shrink: 0;
+    padding: 14px 44px;
+    border: none;
+    border-radius: 999px;
+    background: var(--color-ink);
+    color: #fff;
+    font-family: inherit;
+    font-size: 1.15rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  #datetime {
+    flex-shrink: 0;
+    gap: 2px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  #datetime .datetime-time {
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--color-ink);
+  }
+  #datetime .datetime-date {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+  }
+
+  #change-class-btn {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    padding: 10px 18px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    font-family: inherit;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+  }
+  #change-class-btn:hover {
+    background: var(--color-ink);
+    border-color: var(--color-ink);
+    color: #fff;
+  }
+</style>
+</head>
+<body>
+
+<div id="class-select-screen">
+  <h1>반을 선택하세요</h1>
+  <div class="grade-group" data-grade="1">
+    <h2>1학년</h2>
+    <button class="class-btn" data-class-id="1-1">1</button>
+    <button class="class-btn" data-class-id="1-2">2</button>
+    <button class="class-btn" data-class-id="1-3">3</button>
+  </div>
+  <div class="grade-group" data-grade="2">
+    <h2>2학년</h2>
+    <button class="class-btn" data-class-id="2-1">1</button>
+    <button class="class-btn" data-class-id="2-2">2</button>
+    <button class="class-btn" data-class-id="2-3">3</button>
+    <button class="class-btn" data-class-id="2-4">4</button>
+  </div>
+  <div class="grade-group" data-grade="3">
+    <h2>3학년</h2>
+    <button class="class-btn" data-class-id="3-1">1</button>
+    <button class="class-btn" data-class-id="3-2">2</button>
+    <button class="class-btn" data-class-id="3-3">3</button>
+    <button class="class-btn" data-class-id="3-4">4</button>
+  </div>
+</div>
+
+<div id="dashboard" hidden>
+  <div id="call-overlay" hidden></div>
+  <button id="change-class-btn">반 변경</button>
+
+  <div id="col-left">
+    <section id="weather">
+      <h2>날씨</h2>
+      <div class="content"></div>
+    </section>
+    <section id="meal">
+      <h2>급식</h2>
+      <div class="content"></div>
+    </section>
+  </div>
+
+  <div id="col-center">
+    <section id="datetime">
+      <div class="datetime-time"></div>
+      <div class="datetime-date"></div>
+    </section>
+    <section id="notice">
+      <h2>오늘의 공지사항</h2>
+      <div class="content"></div>
+    </section>
+    <section id="notice-yesterday">
+      <h2>지난 공지사항</h2>
+      <div class="content"></div>
+    </section>
+    <div id="call-popup-area" hidden></div>
+  </div>
+
+  <div id="col-right">
+    <section id="timetable">
+      <h2>시간표</h2>
+      <div class="content"></div>
+    </section>
+    <section id="calendar">
+      <h2>학사일정</h2>
+      <div class="content"></div>
+    </section>
+  </div>
+</div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

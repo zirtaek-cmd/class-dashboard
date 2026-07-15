@@ -1,0 +1,27 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isTeacher() {
+      return request.auth != null
+        && request.auth.token.firebase.sign_in_provider == 'google.com'
+        && request.auth.token.email.matches('.*@ai[.]jne[.]kr$');
+    }
+
+    function isAnonymous() {
+      return request.auth != null
+        && request.auth.token.firebase.sign_in_provider == 'anonymous';
+    }
+
+    match /notices/{classId} {
+      allow read: if true;
+      allow write: if isTeacher();
+    }
+
+    match /calls/{classId}/queue/{callId} {
+      allow read: if true;
+      allow create: if isTeacher();
+      allow delete: if isAnonymous();
+      allow update: if false;
+    }
+  }
+}

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>학급 대시보드 관리자</title>
+<link rel="stylesheet" as="style" crossorigin
+  href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<style>
+  :root {
+    --font-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+    --color-bg: #f7f7fb;
+    --color-surface: #ffffff;
+    --color-border: #e5e7eb;
+    --color-text: #18181b;
+    --color-text-muted: #6b7280;
+    --color-ink: #6366f1;
+    --color-accent-soft: #eef2ff;
+    --radius: 20px;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 10px 28px rgba(0,0,0,.05);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: var(--font-sans);
+    font-size: 18px;
+    color: var(--color-text);
+    background: linear-gradient(180deg, #ffffff 0%, var(--color-accent-soft) 100%);
+  }
+  h1, h2 { font-family: inherit; margin: 0; }
+  [hidden] { display: none !important; }
+  button { font-family: inherit; cursor: pointer; }
+
+  #login-screen {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+  }
+  #login-screen h1 { font-size: 1.8rem; font-weight: 700; }
+  #login-btn {
+    padding: 14px 28px;
+    border: none;
+    border-radius: 999px;
+    background: var(--color-ink);
+    color: #fff;
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+  #login-error {
+    color: #dc2626;
+    font-weight: 600;
+  }
+
+  #admin-screen {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+  header h1 { font-size: 1.4rem; font-weight: 700; }
+  #user-email { color: var(--color-text-muted); font-size: 0.95rem; margin-right: 12px; }
+  #logout-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+
+  .grade-group { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+  .grade-group h2 {
+    width: 64px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-align: right;
+  }
+  .class-btn {
+    min-width: 52px;
+    min-height: 52px;
+    border: 2px solid var(--color-border);
+    border-radius: 12px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  .class-btn.selected, .class-btn:hover {
+    background: var(--color-ink);
+    border-color: var(--color-ink);
+    color: #fff;
+  }
+
+  section {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    margin-top: 24px;
+  }
+  section h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 14px; }
+  textarea, input[type="text"] {
+    width: 100%;
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 12px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    resize: vertical;
+  }
+  textarea { min-height: 110px; }
+  .save-btn {
+    margin-top: 14px;
+    padding: 10px 22px;
+    border: none;
+    border-radius: 999px;
+    background: var(--color-ink);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  .save-feedback {
+    margin-left: 12px;
+    color: var(--color-ink);
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <h1>학급 대시보드 관리자</h1>
+  <button id="login-btn">Google로 로그인</button>
+  <div id="login-error" hidden></div>
+</div>
+
+<div id="admin-screen" hidden>
+  <header>
+    <h1>학급 대시보드 관리자</h1>
+    <div>
+      <span id="user-email"></span>
+      <button id="logout-btn">로그아웃</button>
+    </div>
+  </header>
+
+  <div class="grade-group" data-grade="1">
+    <h2>1학년</h2>
+    <button class="class-btn" data-class-id="1-1">1</button>
+    <button class="class-btn" data-class-id="1-2">2</button>
+    <button class="class-btn" data-class-id="1-3">3</button>
+  </div>
+  <div class="grade-group" data-grade="2">
+    <h2>2학년</h2>
+    <button class="class-btn" data-class-id="2-1">1</button>
+    <button class="class-btn" data-class-id="2-2">2</button>
+    <button class="class-btn" data-class-id="2-3">3</button>
+    <button class="class-btn" data-class-id="2-4">4</button>
+  </div>
+  <div class="grade-group" data-grade="3">
+    <h2>3학년</h2>
+    <button class="class-btn" data-class-id="3-1">1</button>
+    <button class="class-btn" data-class-id="3-2">2</button>
+    <button class="class-btn" data-class-id="3-3">3</button>
+    <button class="class-btn" data-class-id="3-4">4</button>
+  </div>
+
+  <section id="notice-section" hidden>
+    <h2>공지사항 작성</h2>
+    <textarea id="notice-text" placeholder="오늘의 공지사항을 입력하세요"></textarea>
+    <div>
+      <button class="save-btn" id="notice-save-btn">저장</button>
+      <span class="save-feedback" id="notice-feedback" hidden>저장됨</span>
+    </div>
+  </section>
+
+  <section id="call-section" hidden>
+    <h2>호출 보내기</h2>
+    <input type="text" id="call-text" placeholder="호출 메모를 입력하세요">
+    <div>
+      <button class="save-btn" id="call-send-btn">호출 보내기</button>
+      <span class="save-feedback" id="call-feedback" hidden>전송됨</span>
+    </div>
+  </section>
+</div>
+
+<script type="module">
+  import { db, auth } from "../firebase-config.js";
+  import {
+    GoogleAuthProvider,
+    signInWithPopup,
+    signOut,
+    onAuthStateChanged,
+    setPersistence,
+    browserSessionPersistence,
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+  import {
+    doc,
+    getDoc,
+    setDoc,
+    onSnapshot,
+    collection,
+    addDoc,
+    serverTimestamp,
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+  const ALLOWED_DOMAIN = "@ai.jne.kr";
+
+  // 관리자 로그인은 이 탭에만 한정(sessionStorage 기반). 기본(local) persistence를 쓰면
+  // 같은 브라우저의 display 탭까지 이 Google 세션을 공유하게 되어, display 쪽 "확인" 삭제에
+  // 필요한 Anonymous 세션이 깨져버림.
+  setPersistence(auth, browserSessionPersistence);
+
+  function todayIso() {
+    const d = new Date();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${d.getFullYear()}-${m}-${day}`;
+  }
+
+  let selectedClassId = null;
+  let unsubscribeNotice = null;
+
+  const loginScreen = document.getElementById("login-screen");
+  const loginError = document.getElementById("login-error");
+  const adminScreen = document.getElementById("admin-screen");
+  const userEmailEl = document.getElementById("user-email");
+  const noticeSection = document.getElementById("notice-section");
+  const callSection = document.getElementById("call-section");
+  const noticeText = document.getElementById("notice-text");
+  const callText = document.getElementById("call-text");
+
+  document.getElementById("login-btn").addEventListener("click", () => {
+    loginError.hidden = true;
+    signInWithPopup(auth, new GoogleAuthProvider()).catch(() => {
+      loginError.textContent = "로그인에 실패했습니다.";
+      loginError.hidden = false;
+    });
+  });
+
+  document.getElementById("logout-btn").addEventListener("click", () => signOut(auth));
+
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      loginScreen.hidden = false;
+      adminScreen.hidden = true;
+      return;
+    }
+    if (!user.email || !user.email.endsWith(ALLOWED_DOMAIN)) {
+      loginError.textContent = "권한이 없는 계정입니다. @ai.jne.kr 계정으로 로그인해주세요.";
+      loginError.hidden = false;
+      signOut(auth);
+      return;
+    }
+    loginScreen.hidden = true;
+    adminScreen.hidden = false;
+    userEmailEl.textContent = user.email;
+  });
+
+  document.querySelectorAll(".class-btn").forEach((btn) => {
+    btn.addEventListener("click", () => selectClass(btn.dataset.classId));
+  });
+
+  function selectClass(classId) {
+    selectedClassId = classId;
+    document.querySelectorAll(".class-btn").forEach((btn) => {
+      btn.classList.toggle("selected", btn.dataset.classId === classId);
+    });
+    noticeSection.hidden = false;
+    callSection.hidden = false;
+    callText.value = "";
+
+    if (unsubscribeNotice) unsubscribeNotice();
+    unsubscribeNotice = onSnapshot(doc(db, "notices", classId), (snap) => {
+      const data = snap.data();
+      noticeText.value = data && data.date === todayIso() ? data.text : "";
+    });
+  }
+
+  document.getElementById("notice-save-btn").addEventListener("click", async () => {
+    if (!selectedClassId) return;
+    const noticeRef = doc(db, "notices", selectedClassId);
+    const existing = (await getDoc(noticeRef)).data();
+    const carryOver =
+      existing && existing.date !== todayIso()
+        ? { prevText: existing.text, prevDate: existing.date }
+        : { prevText: existing?.prevText ?? "", prevDate: existing?.prevDate ?? "" };
+    await setDoc(noticeRef, {
+      text: noticeText.value,
+      date: todayIso(),
+      ...carryOver,
+    });
+    const feedback = document.getElementById("notice-feedback");
+    feedback.hidden = false;
+    setTimeout(() => (feedback.hidden = true), 2000);
+  });
+
+  document.getElementById("call-send-btn").addEventListener("click", async () => {
+    if (!selectedClassId || !callText.value.trim()) return;
+    await addDoc(collection(db, "calls", selectedClassId, "queue"), {
+      memo: callText.value.trim(),
+      timestamp: serverTimestamp(),
+      date: todayIso(),
+    });
+    callText.value = "";
+    const feedback = document.getElementById("call-feedback");
+    feedback.hidden = false;
+    setTimeout(() => (feedback.hidden = true), 2000);
+  });
+</script>
+</body>
+</html>
