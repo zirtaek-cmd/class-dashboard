@@ -48,14 +48,6 @@ function todayIso() {
   return `${d.getFullYear()}-${m}-${day}`;
 }
 
-function yesterdayIso() {
-  const d = new Date();
-  d.setDate(d.getDate() - 1);
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${d.getFullYear()}-${m}-${day}`;
-}
-
 function weekRangeYmd() {
   const now = new Date();
   const mondayOffset = now.getDay() === 0 ? -6 : 1 - now.getDay();
@@ -92,7 +84,7 @@ function initClassSelect() {
 }
 
 let weatherIntervalId = null;
-let unsubscribeNotice = null;
+let unsubscribeNoticeFns = [];
 let unsubscribeCalls = null;
 
 function enterDashboard(classId) {
@@ -105,8 +97,8 @@ function enterDashboard(classId) {
   weatherIntervalId = setInterval(fetchWeather, WEATHER_CACHE_MS);
   startDateTimeClock();
   signInAnonymously(auth).catch(() => {});
-  if (unsubscribeNotice) unsubscribeNotice();
-  unsubscribeNotice = subscribeNotice(classId);
+  unsubscribeNoticeFns.forEach((fn) => fn());
+  unsubscribeNoticeFns = subscribeNotice(classId);
   if (unsubscribeCalls) unsubscribeCalls();
   unsubscribeCalls = subscribeCalls(classId);
 }
@@ -247,15 +239,46 @@ function startDateTimeClock() {
   dateTimeIntervalId = setInterval(renderDateTime, 15000);
 }
 
+const NOTICE_SCOPE_ORDER = ["all", "grade", "class"];
+
+function renderNotices(container, noticesByScope) {
+  container.innerHTML = "";
+  NOTICE_SCOPE_ORDER.forEach((scope) => {
+    const data = noticesByScope[scope];
+    if (!data || data.date !== todayIso() || !data.text) return;
+    const item = document.createElement("div");
+    item.className = "notice-item";
+    if (scope !== "class") {
+      const label = document.createElement("span");
+      label.className = "notice-scope";
+      label.textContent = scope === "all" ? "[전체]" : `[${data.gradeLabel}학년]`;
+      item.appendChild(label);
+    }
+    const text = document.createElement("span");
+    text.className = "notice-text";
+    text.textContent = data.text;
+    item.appendChild(text);
+    container.appendChild(item);
+  });
+}
+
 function subscribeNotice(classId) {
   const container = document.querySelector("#notice .content");
-  const yesterdayContainer = document.querySelector("#notice-yesterday .content");
-  return onSnapshot(doc(db, "notices", classId), (snap) => {
-    const data = snap.data();
-    container.textContent = data && data.date === todayIso() ? data.text : "";
-    yesterdayContainer.textContent =
-      data && data.prevDate === yesterdayIso() ? data.prevText : "";
-  });
+  const grade = classId.split("-")[0];
+  const targets = {
+    class: classId,
+    grade: `grade-${grade}`,
+    all: "all",
+  };
+  const noticesByScope = {};
+
+  return Object.entries(targets).map(([scope, targetId]) =>
+    onSnapshot(doc(db, "notices", targetId), (snap) => {
+      const data = snap.data();
+      noticesByScope[scope] = data ? { ...data, gradeLabel: grade } : null;
+      renderNotices(container, noticesByScope);
+    })
+  );
 }
 
 function subscribeCalls(classId) {

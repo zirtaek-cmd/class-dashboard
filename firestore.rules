@@ -12,7 +12,7 @@ service cloud.firestore {
         && request.auth.token.firebase.sign_in_provider == 'anonymous';
     }
 
-    match /notices/{classId} {
+    match /notices/{targetId} {
       allow read: if true;
       allow write: if isTeacher();
     }

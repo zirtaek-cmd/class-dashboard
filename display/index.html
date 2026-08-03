@@ -169,28 +169,22 @@
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .notice-item {
     font-size: 1.4rem;
     font-weight: 600;
     color: #fff;
-    white-space: pre-wrap;
+    white-space: pre-line;
   }
-
-  #notice-yesterday {
-    flex: 0 0 auto;
-    min-height: 260px;
-    max-height: 30%;
-  }
-  #notice-yesterday h2 {
-    font-size: 1.05rem;
-    color: var(--color-text-muted);
-  }
-  #notice-yesterday .content {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: auto;
+  .notice-scope {
+    display: inline-block;
+    margin-right: 8px;
     font-size: 1rem;
-    color: var(--color-text-muted);
-    white-space: pre-wrap;
+    font-weight: 700;
+    color: rgba(255,255,255,.75);
   }
 
   #call-overlay {
@@ -322,11 +316,7 @@
       <div class="datetime-date"></div>
     </section>
     <section id="notice">
-      <h2>오늘의 공지사항</h2>
-      <div class="content"></div>
-    </section>
-    <section id="notice-yesterday">
-      <h2>지난 공지사항</h2>
+      <h2>공지사항</h2>
       <div class="content"></div>
     </section>
     <div id="call-popup-area" hidden></div>
