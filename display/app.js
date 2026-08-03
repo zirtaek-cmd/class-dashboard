@@ -245,7 +245,7 @@ function renderNotices(container, noticesByScope) {
   container.innerHTML = "";
   NOTICE_SCOPE_ORDER.forEach((scope) => {
     const data = noticesByScope[scope];
-    if (!data || data.date !== todayIso() || !data.text) return;
+    if (!data || !data.text) return;
     const item = document.createElement("div");
     item.className = "notice-item";
     if (scope !== "class") {

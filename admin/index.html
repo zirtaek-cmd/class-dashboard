@@ -332,7 +332,7 @@
     if (unsubscribeNotice) unsubscribeNotice();
     unsubscribeNotice = onSnapshot(doc(db, "notices", targetId), (snap) => {
       const data = snap.data();
-      noticeText.value = data && data.date === todayIso() ? data.text : "";
+      noticeText.value = data ? data.text : "";
     });
   }
 
@@ -341,7 +341,6 @@
     try {
       await setDoc(doc(db, "notices", selectedTargetId), {
         text: noticeText.value,
-        date: todayIso(),
       });
       const feedback = document.getElementById("notice-feedback");
       feedback.hidden = false;
