@@ -21,6 +21,23 @@ const CLASS_ID_KEY = "classId";
 const WEATHER_CACHE_KEY = "weatherCache";
 const WEATHER_CACHE_MS = 60 * 60 * 1000;
 
+const WEEKDAY_KO_FULL = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
+function todayWeekdayKo() {
+  return WEEKDAY_KO_FULL[new Date().getDay()];
+}
+
+let regularTimetableCache = null;
+async function loadRegularTimetable() {
+  if (regularTimetableCache) return regularTimetableCache;
+  try {
+    const res = await fetch("../data/regular-timetable.json");
+    regularTimetableCache = await res.json();
+  } catch (err) {
+    regularTimetableCache = {};
+  }
+  return regularTimetableCache;
+}
+
 function getStoredClassId() {
   return localStorage.getItem(CLASS_ID_KEY);
 }
@@ -154,8 +171,18 @@ async function fetchTimetable(classId) {
     rows.forEach((row) => {
       byPeriod[row.PERIO] = row.ITRT_CNTNT;
     });
+
+    const regularTimetable = await loadRegularTimetable();
+    const regularForToday = (regularTimetable[classId] || {})[todayWeekdayKo()] || {};
+
     container.innerHTML = Array.from({ length: 7 }, (_, i) => i + 1)
-      .map((period) => `<div>${period}교시 ${byPeriod[period] ?? ""}</div>`)
+      .map((period) => {
+        const subject = (byPeriod[period] ?? "").trim();
+        const regularSubject = (regularForToday[String(period)] ?? "").trim();
+        const changed = subject && regularSubject && subject !== regularSubject;
+        const style = changed ? ' style="color:#ff4d4f;font-weight:600;"' : "";
+        return `<div>${period}교시 <span${style}>${subject}</span></div>`;
+      })
       .join("");
   } catch (err) {
     container.textContent = "시간표를 불러오지 못했습니다.";
