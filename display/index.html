@@ -171,6 +171,84 @@
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    align-content: start;
+  }
+  #board-empty {
+    grid-column: 1 / -1;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+  .board-card {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+  }
+  .board-card .thumb {
+    width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block;
+    background: var(--color-accent-soft);
+  }
+  .board-card .card-title {
+    padding: 6px 8px; font-size: 0.78rem; font-weight: 600;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .board-scope-tag {
+    display: inline-block;
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: var(--color-ink);
+    background: var(--color-accent-soft);
+    padding: 1px 6px;
+    border-radius: 999px;
+    margin-right: 4px;
+  }
+
+  /* ── 게시판 확대 모달 ── */
+  #board-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 15, 25, 0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 24px;
+  }
+  #board-modal-box {
+    background: var(--color-surface);
+    border-radius: 20px;
+    max-width: min(94vw, 1100px);
+    max-height: 94vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 64px rgba(0,0,0,.4);
+  }
+  #board-modal-box img {
+    width: 100%;
+    max-height: 82vh;
+    object-fit: contain;
+    background: #000;
+  }
+  #board-modal-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+  }
+  #board-modal-title-row h3 { font-size: 1.05rem; font-weight: 700; }
+  #board-modal-close {
+    border: none;
+    background: var(--color-bg);
+    color: var(--color-text-muted);
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    font-size: 1rem;
   }
 
   /* ── 오른쪽: 시간표+학사일정 통합 카드 ── */
@@ -341,7 +419,9 @@
 
     <section id="board">
       <h2>게시판</h2>
-      <div class="content"></div>
+      <div class="content">
+        <div id="board-empty">게시된 이미지가 없습니다.</div>
+      </div>
     </section>
   </div>
 
@@ -372,6 +452,16 @@
       <h2>급식</h2>
       <div class="content"></div>
     </section>
+  </div>
+</div>
+
+<div id="board-modal-overlay" hidden>
+  <div id="board-modal-box">
+    <div id="board-modal-title-row">
+      <h3 id="board-modal-title"></h3>
+      <button id="board-modal-close">✕</button>
+    </div>
+    <img id="board-modal-img" alt="확대 이미지">
   </div>
 </div>
 

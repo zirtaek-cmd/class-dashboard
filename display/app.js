@@ -103,6 +103,7 @@ function initClassSelect() {
 let weatherIntervalId = null;
 let unsubscribeNoticeFns = [];
 let unsubscribeCalls = null;
+let unsubscribeBoardFns = [];
 
 function enterDashboard(classId) {
   showDashboard();
@@ -118,6 +119,8 @@ function enterDashboard(classId) {
   unsubscribeNoticeFns = subscribeNotice(classId);
   if (unsubscribeCalls) unsubscribeCalls();
   unsubscribeCalls = subscribeCalls(classId);
+  unsubscribeBoardFns.forEach((fn) => fn());
+  unsubscribeBoardFns = subscribeBoard(classId);
 }
 
 async function fetchMeal() {
@@ -348,6 +351,76 @@ function subscribeCalls(classId) {
   });
 }
 
+const BOARD_SCOPE_ORDER = ["all", "grade", "class"];
+
+function boardScopeTag(scope, gradeLabel) {
+  if (scope === "all") return "전체";
+  if (scope === "grade") return `${gradeLabel}학년`;
+  return null;
+}
+
+function renderBoard(container, postsByScope) {
+  const merged = BOARD_SCOPE_ORDER.flatMap((scope) =>
+    (postsByScope[scope] || []).map((post) => ({ ...post, scope }))
+  ).sort((a, b) => (b.timestamp?.toMillis?.() ?? 0) - (a.timestamp?.toMillis?.() ?? 0));
+
+  container.innerHTML = "";
+  if (merged.length === 0) {
+    const empty = document.createElement("div");
+    empty.id = "board-empty";
+    empty.textContent = "게시된 이미지가 없습니다.";
+    container.appendChild(empty);
+    return;
+  }
+  merged.forEach((post) => {
+    const card = document.createElement("div");
+    card.className = "board-card";
+    const tag = boardScopeTag(post.scope, post.gradeLabel);
+    card.innerHTML = `
+      <div class="card-title">${tag ? `<span class="board-scope-tag">${tag}</span>` : ""}${post.title}</div>
+      <img class="thumb" src="${post.imageData}" alt="${post.title}">
+    `;
+    card.addEventListener("click", () => openBoardModal(post));
+    container.appendChild(card);
+  });
+}
+
+function openBoardModal(post) {
+  document.getElementById("board-modal-img").src = post.imageData;
+  document.getElementById("board-modal-title").textContent = post.title;
+  document.getElementById("board-modal-overlay").hidden = false;
+}
+
+function closeBoardModal() {
+  document.getElementById("board-modal-overlay").hidden = true;
+}
+
+function initBoardModal() {
+  document.getElementById("board-modal-close").addEventListener("click", closeBoardModal);
+  document.getElementById("board-modal-overlay").addEventListener("click", (e) => {
+    if (e.target.id === "board-modal-overlay") closeBoardModal();
+  });
+}
+
+function subscribeBoard(classId) {
+  const container = document.querySelector("#board .content");
+  const grade = classId.split("-")[0];
+  const targets = {
+    class: classId,
+    grade: `grade-${grade}`,
+    all: "all",
+  };
+  const postsByScope = {};
+
+  return Object.entries(targets).map(([scope, targetId]) => {
+    const postsQuery = query(collection(db, "boards", targetId, "posts"), orderBy("timestamp", "desc"));
+    return onSnapshot(postsQuery, (snap) => {
+      postsByScope[scope] = snap.docs.map((d) => ({ id: d.id, ...d.data(), gradeLabel: grade }));
+      renderBoard(container, postsByScope);
+    });
+  });
+}
+
 function scheduleMidnightReload() {
   const now = new Date();
   const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 10, 0, 0);
@@ -357,6 +430,7 @@ function scheduleMidnightReload() {
 
 function init() {
   initClassSelect();
+  initBoardModal();
   scheduleMidnightReload();
   const classId = getStoredClassId();
   if (classId) {

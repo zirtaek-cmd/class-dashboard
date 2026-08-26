@@ -23,5 +23,12 @@ service cloud.firestore {
       allow delete: if isAnonymous();
       allow update: if false;
     }
+
+    match /boards/{targetId}/posts/{postId} {
+      allow read: if true;
+      allow create: if isTeacher();
+      allow delete: if isTeacher();
+      allow update: if false;
+    }
   }
 }

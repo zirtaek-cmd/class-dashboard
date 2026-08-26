@@ -29,7 +29,7 @@
     color: var(--color-text);
     background: linear-gradient(180deg, #ffffff 0%, var(--color-accent-soft) 100%);
   }
-  h1, h2 { font-family: inherit; margin: 0; }
+  h1, h2, h3 { font-family: inherit; margin: 0; }
   [hidden] { display: none !important; }
   button { font-family: inherit; cursor: pointer; }
 
@@ -57,7 +57,7 @@
   }
 
   #admin-screen {
-    max-width: 720px;
+    max-width: 1180px;
     margin: 0 auto;
     padding: 32px 24px 80px;
   }
@@ -78,6 +78,19 @@
     font-size: 0.9rem;
   }
 
+  .admin-grid {
+    display: flex;
+    gap: 24px;
+    align-items: stretch;
+  }
+  .admin-col {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
   .grade-group { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
   .grade-group h2 {
     width: 64px;
@@ -87,13 +100,13 @@
     text-align: right;
   }
   .class-btn {
-    min-width: 52px;
-    min-height: 52px;
+    min-width: 48px;
+    min-height: 48px;
     border: 2px solid var(--color-border);
     border-radius: 12px;
     background: var(--color-surface);
     color: var(--color-text);
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     font-weight: 600;
   }
   .class-btn.selected, .class-btn:hover {
@@ -102,13 +115,13 @@
     color: #fff;
   }
   .target-btn {
-    min-height: 52px;
-    padding: 0 16px;
+    min-height: 48px;
+    padding: 0 14px;
     border: 2px solid var(--color-border);
     border-radius: 12px;
     background: var(--color-surface);
     color: var(--color-text);
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 600;
   }
   .target-btn.selected, .target-btn:hover {
@@ -117,11 +130,19 @@
     color: #fff;
   }
   .all-group { justify-content: center; margin-top: 6px; }
+
+  #target-select-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+  }
   #target-confirm {
-    margin-bottom: 14px;
-    color: var(--color-text-muted);
+    margin-top: 6px;
+    color: var(--color-ink);
     font-size: 0.95rem;
-    font-weight: 600;
+    font-weight: 700;
   }
 
   section {
@@ -130,9 +151,16 @@
     border-radius: var(--radius);
     box-shadow: var(--shadow);
     padding: 24px;
-    margin-top: 24px;
   }
   section h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 14px; }
+  #notice-section {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-height: 0;
+  }
+  #notice-section textarea { flex: 1 1 auto; width: 100%; }
   textarea, input[type="text"] {
     width: 100%;
     font-family: inherit;
@@ -142,7 +170,7 @@
     border-radius: 12px;
     resize: vertical;
   }
-  textarea { min-height: 110px; }
+  textarea { min-height: 90px; }
   .save-btn {
     margin-top: 14px;
     padding: 10px 22px;
@@ -153,11 +181,128 @@
     font-size: 1rem;
     font-weight: 700;
   }
+  .save-btn:disabled {
+    background: var(--color-border);
+    color: var(--color-text-muted);
+    cursor: not-allowed;
+  }
   .save-feedback {
     margin-left: 12px;
     color: var(--color-ink);
     font-weight: 600;
     font-size: 0.9rem;
+  }
+
+  /* 게시글 목록 관리 */
+  #post-list-section {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  #post-list-section .content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: 420px;
+    overflow-y: auto;
+  }
+  #post-list-empty {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    padding: 12px 0;
+  }
+  .post-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    background: var(--color-bg);
+    border-radius: 12px;
+  }
+  .post-row .thumb {
+    width: 56px;
+    height: 56px;
+    border-radius: 10px;
+    object-fit: cover;
+    background: var(--color-accent-soft);
+    flex-shrink: 0;
+  }
+  .post-row .post-meta { flex: 1; min-width: 0; }
+  .post-row .post-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .post-row .post-scope {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    margin-top: 2px;
+  }
+  .post-row .delete-btn {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+  .post-row .delete-btn:hover { background: #fee2e2; color: #dc2626; }
+
+  /* 이미지 업로드 */
+  .file-drop {
+    display: block;
+    border: 2px dashed var(--color-border);
+    border-radius: 14px;
+    padding: 22px;
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    margin: 14px 0;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .file-drop:hover, .file-drop.drag-over, .file-drop:focus {
+    border-color: var(--color-ink);
+    background: var(--color-accent-soft);
+    outline: none;
+  }
+  .file-drop input { display: none; }
+
+  .preview-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 14px;
+    padding: 12px;
+    background: var(--color-bg);
+    border-radius: 12px;
+  }
+  .preview-row img {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid var(--color-border);
+  }
+  .preview-meta { font-size: 0.85rem; color: var(--color-text-muted); line-height: 1.6; }
+  .preview-meta b { color: var(--color-text); }
+
+  .size-error {
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    color: #b91c1c;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 14px;
   }
 </style>
 </head>
@@ -178,51 +323,94 @@
     </div>
   </header>
 
-  <div class="grade-group" data-grade="1">
-    <h2>1학년</h2>
-    <button class="class-btn" data-target-id="1-1">1</button>
-    <button class="class-btn" data-target-id="1-2">2</button>
-    <button class="class-btn" data-target-id="1-3">3</button>
-    <button class="target-btn" data-target-id="grade-1">1학년 전체</button>
-  </div>
-  <div class="grade-group" data-grade="2">
-    <h2>2학년</h2>
-    <button class="class-btn" data-target-id="2-1">1</button>
-    <button class="class-btn" data-target-id="2-2">2</button>
-    <button class="class-btn" data-target-id="2-3">3</button>
-    <button class="class-btn" data-target-id="2-4">4</button>
-    <button class="target-btn" data-target-id="grade-2">2학년 전체</button>
-  </div>
-  <div class="grade-group" data-grade="3">
-    <h2>3학년</h2>
-    <button class="class-btn" data-target-id="3-1">1</button>
-    <button class="class-btn" data-target-id="3-2">2</button>
-    <button class="class-btn" data-target-id="3-3">3</button>
-    <button class="class-btn" data-target-id="3-4">4</button>
-    <button class="target-btn" data-target-id="grade-3">3학년 전체</button>
-  </div>
-  <div class="grade-group all-group">
-    <button class="target-btn" data-target-id="all">전교생</button>
-  </div>
+  <div class="admin-grid">
 
-  <section id="notice-section" hidden>
-    <h2>공지사항 작성</h2>
-    <div id="target-confirm"></div>
-    <textarea id="notice-text" placeholder="오늘의 공지사항을 입력하세요"></textarea>
-    <div>
-      <button class="save-btn" id="notice-save-btn">저장</button>
-      <span class="save-feedback" id="notice-feedback" hidden>저장됨</span>
-    </div>
-  </section>
+    <!-- 왼쪽: 대상 선택 + 공지사항 + 알림 -->
+    <div class="admin-col">
+      <div id="target-select-card">
+        <div class="grade-group" data-grade="1">
+          <h2>1학년</h2>
+          <button class="class-btn" data-target-id="1-1">1</button>
+          <button class="class-btn" data-target-id="1-2">2</button>
+          <button class="class-btn" data-target-id="1-3">3</button>
+          <button class="target-btn" data-target-id="grade-1">1학년 전체</button>
+        </div>
+        <div class="grade-group" data-grade="2">
+          <h2>2학년</h2>
+          <button class="class-btn" data-target-id="2-1">1</button>
+          <button class="class-btn" data-target-id="2-2">2</button>
+          <button class="class-btn" data-target-id="2-3">3</button>
+          <button class="class-btn" data-target-id="2-4">4</button>
+          <button class="target-btn" data-target-id="grade-2">2학년 전체</button>
+        </div>
+        <div class="grade-group" data-grade="3">
+          <h2>3학년</h2>
+          <button class="class-btn" data-target-id="3-1">1</button>
+          <button class="class-btn" data-target-id="3-2">2</button>
+          <button class="class-btn" data-target-id="3-3">3</button>
+          <button class="class-btn" data-target-id="3-4">4</button>
+          <button class="target-btn" data-target-id="grade-3">3학년 전체</button>
+        </div>
+        <div class="grade-group all-group">
+          <button class="target-btn" data-target-id="all">전교생</button>
+        </div>
+        <div id="target-confirm"></div>
+      </div>
 
-  <section id="call-section" hidden>
-    <h2>알림 보내기</h2>
-    <input type="text" id="call-text" placeholder="알림 메모를 입력하세요">
-    <div>
-      <button class="save-btn" id="call-send-btn">알림 보내기</button>
-      <span class="save-feedback" id="call-feedback" hidden>전송됨</span>
+      <section id="notice-section" hidden>
+        <h2>공지사항 작성</h2>
+        <textarea id="notice-text" placeholder="오늘의 공지사항을 입력하세요"></textarea>
+        <div>
+          <button class="save-btn" id="notice-save-btn">저장</button>
+          <span class="save-feedback" id="notice-feedback" hidden>저장됨</span>
+        </div>
+      </section>
+
+      <section id="call-section" hidden>
+        <h2>알림 보내기</h2>
+        <input type="text" id="call-text" placeholder="알림 메모를 입력하세요">
+        <div>
+          <button class="save-btn" id="call-send-btn">알림 보내기</button>
+          <span class="save-feedback" id="call-feedback" hidden>전송됨</span>
+        </div>
+      </section>
     </div>
-  </section>
+
+    <!-- 오른쪽: 게시글 목록 관리 + 이미지 업로드 -->
+    <div class="admin-col">
+      <section id="post-list-section" hidden>
+        <h2>게시글 목록 관리</h2>
+        <div id="post-list-empty">게시글이 없습니다.</div>
+        <div class="content" id="post-list"></div>
+      </section>
+
+      <section id="upload-section" hidden>
+        <h2>이미지 게시판 업로드</h2>
+        <input type="text" id="post-title-input" placeholder="게시글 제목을 입력하세요">
+
+        <label class="file-drop" id="drop-zone" tabindex="0">
+          <input type="file" id="file-input" accept="image/*">
+          <span id="drop-label">클릭해서 파일 선택 · 드래그 · 캡처 후 이 영역 클릭하고 Ctrl+V</span>
+        </label>
+
+        <div class="preview-row" id="preview-row" hidden>
+          <img id="preview-img" alt="미리보기">
+          <div class="preview-meta">
+            <div><b id="preview-filename"></b></div>
+            <div>원본: <span id="size-original"></span> → 압축 후: <span id="size-compressed"></span></div>
+          </div>
+        </div>
+
+        <div class="size-error" id="size-error" hidden>
+          ⚠️ 이미지가 너무 커서 업로드할 수 없습니다 (최대 압축 후에도 950KB 초과). 다른 이미지를 선택해주세요.
+        </div>
+
+        <button class="save-btn" id="post-save-btn" disabled>게시하기</button>
+        <span class="save-feedback" id="post-feedback" hidden>게시됨</span>
+      </section>
+    </div>
+
+  </div>
 </div>
 
 <script type="module">
@@ -241,6 +429,9 @@
     onSnapshot,
     collection,
     addDoc,
+    deleteDoc,
+    query,
+    orderBy,
     serverTimestamp,
   } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
@@ -262,6 +453,7 @@
 
   let selectedTargetId = null;
   let unsubscribeNotice = null;
+  let unsubscribePosts = null;
 
   const loginScreen = document.getElementById("login-screen");
   const loginError = document.getElementById("login-error");
@@ -272,6 +464,11 @@
   const targetConfirm = document.getElementById("target-confirm");
   const noticeText = document.getElementById("notice-text");
   const callText = document.getElementById("call-text");
+  const postListSection = document.getElementById("post-list-section");
+  const uploadSection = document.getElementById("upload-section");
+  const postList = document.getElementById("post-list");
+  const postListEmpty = document.getElementById("post-list-empty");
+  const postTitleInput = document.getElementById("post-title-input");
 
   document.getElementById("login-btn").addEventListener("click", () => {
     loginError.hidden = true;
@@ -317,12 +514,22 @@
     return `${grade}학년 ${classNo}반에 게시됩니다`;
   }
 
+  function targetScopeLabel(targetId) {
+    if (targetId === "all") return "전교생";
+    const gradeMatch = targetId.match(/^grade-(\d)$/);
+    if (gradeMatch) return `${gradeMatch[1]}학년 전체`;
+    const [grade, classNo] = targetId.split("-");
+    return `${grade}학년 ${classNo}반`;
+  }
+
   function selectTarget(targetId) {
     selectedTargetId = targetId;
     document.querySelectorAll(".class-btn, .target-btn").forEach((btn) => {
       btn.classList.toggle("selected", btn.dataset.targetId === targetId);
     });
     noticeSection.hidden = false;
+    postListSection.hidden = false;
+    uploadSection.hidden = false;
     targetConfirm.textContent = targetConfirmText(targetId);
 
     const isClassTarget = /^\d-\d$/.test(targetId);
@@ -333,6 +540,37 @@
     unsubscribeNotice = onSnapshot(doc(db, "notices", targetId), (snap) => {
       const data = snap.data();
       noticeText.value = data ? data.text : "";
+    });
+
+    if (unsubscribePosts) unsubscribePosts();
+    const postsQuery = query(collection(db, "boards", targetId, "posts"), orderBy("timestamp", "desc"));
+    unsubscribePosts = onSnapshot(postsQuery, (snap) => {
+      renderPostList(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    });
+  }
+
+  function renderPostList(posts) {
+    postListEmpty.hidden = posts.length > 0;
+    postList.innerHTML = "";
+    posts.forEach((post) => {
+      const row = document.createElement("div");
+      row.className = "post-row";
+      row.innerHTML = `
+        <img class="thumb" src="${post.imageData}" alt="${post.title}">
+        <div class="post-meta">
+          <div class="post-title">${post.title}</div>
+          <div class="post-scope">${targetScopeLabel(selectedTargetId)}</div>
+        </div>
+        <button class="delete-btn" title="삭제">✕</button>
+      `;
+      row.querySelector(".delete-btn").addEventListener("click", () => {
+        if (confirm(`"${post.title}" 게시글을 삭제할까요?`)) {
+          deleteDoc(doc(db, "boards", selectedTargetId, "posts", post.id)).catch((err) =>
+            alert("삭제에 실패했습니다: " + err.message)
+          );
+        }
+      });
+      postList.appendChild(row);
     });
   }
 
@@ -361,6 +599,145 @@
     const feedback = document.getElementById("call-feedback");
     feedback.hidden = false;
     setTimeout(() => (feedback.hidden = true), 2000);
+  });
+
+  // ── 이미지 게시판 업로드 ──
+  const MAX_WIDTH = 1000;
+  const QUALITY_STEPS = [0.7, 0.5, 0.3];
+  const MAX_BYTES = 950 * 1024;
+
+  let pendingImage = null; // { dataUrl, sizeBytes } 또는 null(용량 초과로 거부됨)
+
+  const fileInput = document.getElementById("file-input");
+  const dropZone = document.getElementById("drop-zone");
+  const dropLabel = document.getElementById("drop-label");
+  const previewRow = document.getElementById("preview-row");
+  const previewImg = document.getElementById("preview-img");
+  const previewFilename = document.getElementById("preview-filename");
+  const sizeOriginal = document.getElementById("size-original");
+  const sizeCompressed = document.getElementById("size-compressed");
+  const sizeError = document.getElementById("size-error");
+  const postSaveBtn = document.getElementById("post-save-btn");
+  const postFeedback = document.getElementById("post-feedback");
+
+  function formatKB(bytes) {
+    return (bytes / 1024).toFixed(0) + "KB";
+  }
+
+  function resizeToCanvas(img) {
+    const scale = Math.min(1, MAX_WIDTH / img.width);
+    const w = Math.round(img.width * scale);
+    const h = Math.round(img.height * scale);
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0, w, h);
+    return canvas;
+  }
+
+  function loadImage(file) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const reader = new FileReader();
+      reader.onload = (e) => { img.src = e.target.result; };
+      reader.onerror = reject;
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function resizeAndCompress(file) {
+    const img = await loadImage(file);
+    const canvas = resizeToCanvas(img);
+    let dataUrl, compressedBytes;
+    for (const quality of QUALITY_STEPS) {
+      dataUrl = canvas.toDataURL("image/jpeg", quality);
+      compressedBytes = Math.round((dataUrl.length - "data:image/jpeg;base64,".length) * 0.75);
+      if (compressedBytes <= MAX_BYTES) {
+        return { dataUrl, compressedBytes, ok: true };
+      }
+    }
+    return { dataUrl, compressedBytes, ok: false };
+  }
+
+  async function handleFile(file) {
+    if (!file || !file.type.startsWith("image/")) return;
+    dropLabel.textContent = "변환 중...";
+    const { dataUrl, compressedBytes, ok } = await resizeAndCompress(file);
+    previewImg.src = dataUrl;
+    previewFilename.textContent = file.name;
+    sizeOriginal.textContent = formatKB(file.size);
+    sizeCompressed.textContent = formatKB(compressedBytes);
+    previewRow.hidden = false;
+    dropLabel.textContent = "클릭해서 파일 선택 · 드래그 · 캡처 후 이 영역 클릭하고 Ctrl+V";
+
+    if (ok) {
+      pendingImage = { dataUrl, sizeBytes: compressedBytes };
+      sizeError.hidden = true;
+    } else {
+      pendingImage = null;
+      sizeError.hidden = false;
+    }
+    updatePostSaveBtn();
+  }
+
+  fileInput.addEventListener("change", (e) => handleFile(e.target.files[0]));
+
+  ["dragover", "dragenter"].forEach((evt) =>
+    dropZone.addEventListener(evt, (e) => {
+      e.preventDefault();
+      dropZone.classList.add("drag-over");
+    })
+  );
+  ["dragleave", "drop"].forEach((evt) =>
+    dropZone.addEventListener(evt, (e) => {
+      e.preventDefault();
+      dropZone.classList.remove("drag-over");
+    })
+  );
+  dropZone.addEventListener("drop", (e) => handleFile(e.dataTransfer.files[0]));
+
+  document.addEventListener("paste", (e) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of items) {
+      if (item.type.startsWith("image/")) {
+        e.preventDefault();
+        const file = item.getAsFile();
+        handleFile(file);
+        dropZone.classList.add("drag-over");
+        setTimeout(() => dropZone.classList.remove("drag-over"), 400);
+        break;
+      }
+    }
+  });
+
+  postTitleInput.addEventListener("input", updatePostSaveBtn);
+  function updatePostSaveBtn() {
+    postSaveBtn.disabled = !(postTitleInput.value.trim() && pendingImage && selectedTargetId);
+  }
+
+  postSaveBtn.addEventListener("click", async () => {
+    if (!pendingImage || !postTitleInput.value.trim() || !selectedTargetId) return;
+    try {
+      await addDoc(collection(db, "boards", selectedTargetId, "posts"), {
+        title: postTitleInput.value.trim(),
+        imageData: pendingImage.dataUrl,
+        date: todayIso(),
+        timestamp: serverTimestamp(),
+      });
+      postTitleInput.value = "";
+      pendingImage = null;
+      previewRow.hidden = true;
+      fileInput.value = "";
+      updatePostSaveBtn();
+      postFeedback.hidden = false;
+      setTimeout(() => (postFeedback.hidden = true), 1800);
+    } catch (err) {
+      alert("게시글 저장에 실패했습니다: " + err.message);
+    }
   });
 </script>
 </body>
