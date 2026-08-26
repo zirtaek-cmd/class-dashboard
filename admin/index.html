@@ -57,7 +57,7 @@
   }
 
   #admin-screen {
-    max-width: 1180px;
+    max-width: 1758px;
     margin: 0 auto;
     padding: 32px 24px 80px;
   }
@@ -304,6 +304,32 @@
     font-weight: 600;
     margin-bottom: 14px;
   }
+
+  /* 미리보기 */
+  #preview-section {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  #preview-frame-wrap {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    border-radius: 12px;
+    background: #000;
+  }
+  #preview-frame {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1920px;
+    height: 1080px;
+    border: none;
+    transform-origin: top left;
+    pointer-events: none;
+  }
 </style>
 </head>
 <body>
@@ -410,6 +436,16 @@
       </section>
     </div>
 
+    <!-- 미리보기: 실제 display 화면 실시간 확인 -->
+    <div class="admin-col">
+      <section id="preview-section" hidden>
+        <h2>미리보기</h2>
+        <div id="preview-frame-wrap">
+          <iframe id="preview-frame" title="학생용 화면 미리보기" scrolling="no" tabindex="-1"></iframe>
+        </div>
+      </section>
+    </div>
+
   </div>
 </div>
 
@@ -469,6 +505,9 @@
   const postList = document.getElementById("post-list");
   const postListEmpty = document.getElementById("post-list-empty");
   const postTitleInput = document.getElementById("post-title-input");
+  const previewSection = document.getElementById("preview-section");
+  const previewWrap = document.getElementById("preview-frame-wrap");
+  const previewFrame = document.getElementById("preview-frame");
 
   document.getElementById("login-btn").addEventListener("click", () => {
     loginError.hidden = true;
@@ -514,6 +553,35 @@
     return `${grade}학년 ${classNo}반에 게시됩니다`;
   }
 
+  const PREVIEW_W = 1920;
+  const PREVIEW_H = 1080;
+
+  function representativeClassId(targetId) {
+    if (/^\d-\d$/.test(targetId)) return targetId;
+    const gradeMatch = targetId.match(/^grade-(\d)$/);
+    if (gradeMatch) return `${gradeMatch[1]}-1`;
+    return "1-1";
+  }
+
+  function updatePreviewFrame(targetId) {
+    previewSection.hidden = false;
+    const classId = representativeClassId(targetId);
+    const src = `../display/index.html?classId=${classId}`;
+    if (previewFrame.src.endsWith(src)) return;
+    previewFrame.src = src;
+  }
+
+  function scalePreviewFrame() {
+    const w = previewWrap.clientWidth;
+    const h = previewWrap.clientHeight;
+    if (!w || !h) return;
+    const scale = Math.min(w / PREVIEW_W, h / PREVIEW_H);
+    const x = (w - PREVIEW_W * scale) / 2;
+    const y = (h - PREVIEW_H * scale) / 2;
+    previewFrame.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+  }
+  new ResizeObserver(scalePreviewFrame).observe(previewWrap);
+
   function targetScopeLabel(targetId) {
     if (targetId === "all") return "전교생";
     const gradeMatch = targetId.match(/^grade-(\d)$/);
@@ -535,6 +603,8 @@
     const isClassTarget = /^\d-\d$/.test(targetId);
     callSection.hidden = !isClassTarget;
     callText.value = "";
+
+    updatePreviewFrame(targetId);
 
     if (unsubscribeNotice) unsubscribeNotice();
     unsubscribeNotice = onSnapshot(doc(db, "notices", targetId), (snap) => {

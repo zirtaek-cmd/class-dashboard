@@ -38,6 +38,10 @@ async function loadRegularTimetable() {
   return regularTimetableCache;
 }
 
+function getUrlClassId() {
+  return new URLSearchParams(location.search).get("classId");
+}
+
 function getStoredClassId() {
   return localStorage.getItem(CLASS_ID_KEY);
 }
@@ -432,7 +436,7 @@ function init() {
   initClassSelect();
   initBoardModal();
   scheduleMidnightReload();
-  const classId = getStoredClassId();
+  const classId = getUrlClassId() || getStoredClassId();
   if (classId) {
     enterDashboard(classId);
   } else {
