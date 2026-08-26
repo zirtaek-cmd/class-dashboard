@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>이미지 게시판 시안</title>
+<link rel="stylesheet" as="style" crossorigin
+  href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<style>
+  :root {
+    --font-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+    --color-bg: #f7f7fb;
+    --color-surface: #ffffff;
+    --color-border: #e5e7eb;
+    --color-text: #18181b;
+    --color-text-muted: #6b7280;
+    --color-ink: #6366f1;
+    --color-accent-soft: #eef2ff;
+    --radius: 20px;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 10px 28px rgba(0,0,0,.05);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: var(--font-sans);
+    color: var(--color-text);
+    background: linear-gradient(180deg, #ffffff 0%, var(--color-accent-soft) 100%);
+  }
+  h1, h2, h3 { font-family: inherit; margin: 0; }
+  [hidden] { display: none !important; }
+  button { font-family: inherit; cursor: pointer; }
+
+  #page {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+  .demo-banner {
+    background: #fef3c7;
+    border: 1px solid #fbbf24;
+    border-radius: 14px;
+    padding: 12px 18px;
+    font-size: 0.9rem;
+    color: #92400e;
+    font-weight: 600;
+    margin-bottom: 28px;
+  }
+  header h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+  header p { color: var(--color-text-muted); font-size: 0.95rem; margin: 0 0 28px; }
+
+  section {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  section h2 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .tag {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: var(--color-accent-soft);
+    color: var(--color-ink);
+  }
+
+  input[type="text"] {
+    width: 100%;
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 12px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    margin-bottom: 14px;
+  }
+
+  .file-drop {
+    border: 2px dashed var(--color-border);
+    border-radius: 14px;
+    padding: 28px;
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+    margin-bottom: 14px;
+  }
+  .file-drop:hover, .file-drop.drag-over, .file-drop:focus {
+    border-color: var(--color-ink);
+    background: var(--color-accent-soft);
+    outline: none;
+  }
+  .file-drop input { display: none; }
+
+  .preview-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 14px;
+    padding: 12px;
+    background: var(--color-bg);
+    border-radius: 12px;
+  }
+  .preview-row img {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid var(--color-border);
+  }
+  .preview-meta { font-size: 0.85rem; color: var(--color-text-muted); line-height: 1.6; }
+  .preview-meta b { color: var(--color-text); }
+
+  .save-btn {
+    padding: 10px 22px;
+    border: none;
+    border-radius: 999px;
+    background: var(--color-ink);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  .save-btn:disabled {
+    background: var(--color-border);
+    color: var(--color-text-muted);
+    cursor: not-allowed;
+  }
+  .save-feedback {
+    margin-left: 12px;
+    color: var(--color-ink);
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+
+  /* 학생 화면 미리보기 */
+  #board-preview-frame {
+    background: var(--color-bg);
+    border-radius: 16px;
+    padding: 20px;
+  }
+  #board-empty {
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+    padding: 40px 0;
+  }
+  #board-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+  }
+  .board-card {
+    position: relative;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform .12s, box-shadow .12s;
+  }
+  .board-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+  .board-card .delete-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 999px;
+    background: rgba(0,0,0,.55);
+    color: #fff;
+    font-size: 0.85rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+  .board-card .delete-btn:hover {
+    background: #dc2626;
+  }
+  .board-card .thumb {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    display: block;
+    background: var(--color-accent-soft);
+  }
+  .board-card .card-title {
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* 확대 모달 */
+  #modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 15, 25, 0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 24px;
+  }
+  #modal-box {
+    background: var(--color-surface);
+    border-radius: 20px;
+    max-width: min(94vw, 1100px);
+    max-height: 94vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 64px rgba(0,0,0,.4);
+  }
+  #modal-box img {
+    width: 100%;
+    max-height: 82vh;
+    object-fit: contain;
+    background: #000;
+  }
+  #modal-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+  }
+  #modal-title-row h3 { font-size: 1.05rem; font-weight: 700; }
+  #modal-close {
+    border: none;
+    background: var(--color-bg);
+    color: var(--color-text-muted);
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    font-size: 1rem;
+  }
+
+  .size-note {
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    margin-top: 6px;
+  }
+  .size-error {
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    color: #b91c1c;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+</style>
+</head>
+<body>
+
+<div id="page">
+  <div class="demo-banner">🧪 이 화면은 시안입니다 — 실제 서버(Firestore)에 저장되지 않고, 새로고침하면 초기화됩니다.</div>
+
+  <header>
+    <h1>이미지 게시판 시안</h1>
+    <p>제목 입력 → 이미지 첨부(자동 압축) → 저장 → 아래 게시판에 썸네일로 표시 → 클릭 시 확대</p>
+  </header>
+
+  <section>
+    <h2>게시글 작성 <span class="tag">관리자 화면</span></h2>
+    <input type="text" id="title-input" placeholder="게시글 제목을 입력하세요">
+
+    <label class="file-drop" id="drop-zone" tabindex="0">
+      <input type="file" id="file-input" accept="image/*">
+      <span id="drop-label">클릭해서 파일 선택 · 드래그 · 캡처 후 이 영역 클릭하고 <b>Ctrl+V</b></span>
+    </label>
+
+    <div class="preview-row" id="preview-row" hidden>
+      <img id="preview-img" alt="미리보기">
+      <div class="preview-meta">
+        <div><b id="preview-filename"></b></div>
+        <div>원본: <span id="size-original"></span> → 압축 후: <span id="size-compressed"></span></div>
+      </div>
+    </div>
+
+    <div class="size-error" id="size-error" hidden>
+      ⚠️ 이미지가 너무 커서 업로드할 수 없습니다 (최대 압축 후에도 1MB 초과). 다른 이미지를 선택해주세요.
+    </div>
+
+    <button class="save-btn" id="save-btn" disabled>게시하기</button>
+    <span class="save-feedback" id="save-feedback" hidden>게시됨</span>
+    <div class="size-note">데모 설정: 가로 최대 1000px로 리사이즈, JPEG 품질 70%→50%→30% 순으로 자동 재압축, 그래도 1MB 넘으면 업로드 차단</div>
+  </section>
+
+  <section>
+    <h2>게시판 미리보기 <span class="tag">학생 화면</span></h2>
+    <div id="board-preview-frame">
+      <div id="board-empty">아직 게시된 이미지가 없습니다. 위에서 먼저 게시해보세요.</div>
+      <div id="board-list" hidden></div>
+    </div>
+  </section>
+</div>
+
+<div id="modal-overlay" hidden>
+  <div id="modal-box">
+    <div id="modal-title-row">
+      <h3 id="modal-title"></h3>
+      <button id="modal-close">✕</button>
+    </div>
+    <img id="modal-img" alt="확대 이미지">
+  </div>
+</div>
+
+<script>
+  const MAX_WIDTH = 1000;
+  const QUALITY_STEPS = [0.7, 0.5, 0.3];
+  const MAX_BYTES = 950 * 1024; // Firestore 문서 1MB 한도 대비 여유를 둔 상한
+
+  const posts = []; // 데모용 메모리 저장 (새로고침 시 초기화)
+  let pendingImage = null; // { dataUrl, sizeKB } 또는 null(용량 초과로 거부됨)
+
+  const fileInput = document.getElementById("file-input");
+  const dropZone = document.getElementById("drop-zone");
+  const dropLabel = document.getElementById("drop-label");
+  const titleInput = document.getElementById("title-input");
+  const saveBtn = document.getElementById("save-btn");
+  const previewRow = document.getElementById("preview-row");
+  const previewImg = document.getElementById("preview-img");
+  const previewFilename = document.getElementById("preview-filename");
+  const sizeOriginal = document.getElementById("size-original");
+  const sizeCompressed = document.getElementById("size-compressed");
+  const boardEmpty = document.getElementById("board-empty");
+  const boardList = document.getElementById("board-list");
+  const saveFeedback = document.getElementById("save-feedback");
+  const sizeError = document.getElementById("size-error");
+
+  function formatKB(bytes) {
+    return (bytes / 1024).toFixed(0) + "KB";
+  }
+
+  function resizeToCanvas(img) {
+    const scale = Math.min(1, MAX_WIDTH / img.width);
+    const w = Math.round(img.width * scale);
+    const h = Math.round(img.height * scale);
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0, w, h);
+    return canvas;
+  }
+
+  function loadImage(file) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const reader = new FileReader();
+      reader.onload = (e) => { img.src = e.target.result; };
+      reader.onerror = reject;
+      img.onload = () => resolve(img);
+      img.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function resizeAndCompress(file) {
+    const img = await loadImage(file);
+    const canvas = resizeToCanvas(img);
+    let dataUrl, compressedBytes;
+    for (const quality of QUALITY_STEPS) {
+      dataUrl = canvas.toDataURL("image/jpeg", quality);
+      compressedBytes = Math.round((dataUrl.length - "data:image/jpeg;base64,".length) * 0.75);
+      if (compressedBytes <= MAX_BYTES) {
+        return { dataUrl, compressedBytes, ok: true };
+      }
+    }
+    // 가장 낮은 품질로도 한도를 못 맞추면 거부
+    return { dataUrl, compressedBytes, ok: false };
+  }
+
+  async function handleFile(file) {
+    if (!file || !file.type.startsWith("image/")) return;
+    dropLabel.textContent = "변환 중...";
+    const { dataUrl, compressedBytes, ok } = await resizeAndCompress(file);
+    previewImg.src = dataUrl;
+    previewFilename.textContent = file.name;
+    sizeOriginal.textContent = formatKB(file.size);
+    sizeCompressed.textContent = formatKB(compressedBytes);
+    previewRow.hidden = false;
+    dropLabel.textContent = "클릭해서 파일 선택 · 드래그 · 캡처 후 이 영역 클릭하고 Ctrl+V";
+
+    if (ok) {
+      pendingImage = { dataUrl, sizeKB: compressedBytes };
+      sizeError.hidden = true;
+    } else {
+      pendingImage = null;
+      sizeError.hidden = false;
+    }
+    updateSaveBtn();
+  }
+
+  fileInput.addEventListener("change", (e) => handleFile(e.target.files[0]));
+
+  ["dragover", "dragenter"].forEach((evt) =>
+    dropZone.addEventListener(evt, (e) => {
+      e.preventDefault();
+      dropZone.classList.add("drag-over");
+    })
+  );
+  ["dragleave", "drop"].forEach((evt) =>
+    dropZone.addEventListener(evt, (e) => {
+      e.preventDefault();
+      dropZone.classList.remove("drag-over");
+    })
+  );
+  dropZone.addEventListener("drop", (e) => handleFile(e.dataTransfer.files[0]));
+
+  // 클립보드 붙여넣기(Ctrl+V) 지원: 페이지 어디서나 이미지가 붙여넣기되면 바로 처리
+  document.addEventListener("paste", (e) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (const item of items) {
+      if (item.type.startsWith("image/")) {
+        e.preventDefault();
+        const file = item.getAsFile();
+        handleFile(file);
+        dropZone.classList.add("drag-over");
+        setTimeout(() => dropZone.classList.remove("drag-over"), 400);
+        break;
+      }
+    }
+  });
+
+  titleInput.addEventListener("input", updateSaveBtn);
+  function updateSaveBtn() {
+    saveBtn.disabled = !(titleInput.value.trim() && pendingImage);
+  }
+
+  saveBtn.addEventListener("click", () => {
+    if (!pendingImage || !titleInput.value.trim()) return;
+    posts.unshift({
+      title: titleInput.value.trim(),
+      dataUrl: pendingImage.dataUrl,
+      sizeKB: pendingImage.sizeKB,
+    });
+    renderBoard();
+    titleInput.value = "";
+    pendingImage = null;
+    previewRow.hidden = true;
+    fileInput.value = "";
+    updateSaveBtn();
+    saveFeedback.hidden = false;
+    setTimeout(() => (saveFeedback.hidden = true), 1800);
+  });
+
+  function renderBoard() {
+    if (posts.length === 0) {
+      boardEmpty.hidden = false;
+      boardList.hidden = true;
+      return;
+    }
+    boardEmpty.hidden = true;
+    boardList.hidden = false;
+    boardList.innerHTML = "";
+    posts.forEach((post, idx) => {
+      const card = document.createElement("div");
+      card.className = "board-card";
+      card.innerHTML = `
+        <button class="delete-btn" title="삭제">✕</button>
+        <img class="thumb" src="${post.dataUrl}" alt="${post.title}">
+        <div class="card-title">${post.title}</div>
+      `;
+      card.querySelector(".delete-btn").addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (confirm(`"${post.title}" 게시글을 삭제할까요?`)) {
+          posts.splice(idx, 1);
+          renderBoard();
+        }
+      });
+      card.addEventListener("click", () => openModal(idx));
+      boardList.appendChild(card);
+    });
+  }
+
+  const modalOverlay = document.getElementById("modal-overlay");
+  const modalImg = document.getElementById("modal-img");
+  const modalTitle = document.getElementById("modal-title");
+  const modalClose = document.getElementById("modal-close");
+
+  function openModal(idx) {
+    const post = posts[idx];
+    modalImg.src = post.dataUrl;
+    modalTitle.textContent = post.title;
+    modalOverlay.hidden = false;
+  }
+  modalClose.addEventListener("click", () => (modalOverlay.hidden = true));
+  modalOverlay.addEventListener("click", (e) => {
+    if (e.target === modalOverlay) modalOverlay.hidden = true;
+  });
+</script>
+</body>
+</html>

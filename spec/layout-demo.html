@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>대시보드 레이아웃 시안</title>
+<link rel="stylesheet" as="style" crossorigin
+  href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<style>
+  :root {
+    --font-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+    --color-bg: #f7f7fb;
+    --color-surface: #ffffff;
+    --color-border: #e5e7eb;
+    --color-text: #18181b;
+    --color-text-muted: #6b7280;
+    --color-ink: #6366f1;
+    --color-accent-soft: #eef2ff;
+    --radius: 20px;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 10px 28px rgba(0,0,0,.05);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  html { font-size: 24px; }
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    color: var(--color-text);
+    background: var(--color-bg);
+    line-height: 1.85;
+    overflow: hidden;
+  }
+  h1, h2 { font-family: inherit; margin: 0; }
+  [hidden] { display: none !important; }
+
+  #dashboard {
+    height: 100vh;
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+  }
+  #col-left, #col-center, #col-right {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-height: 0;
+  }
+  #col-left { flex: 1 1 0; }
+  #col-center { flex: 1.4 1 0; }
+  #col-right { flex: 1 1 0; }
+  section {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 22px 26px;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  section h2 {
+    flex-shrink: 0;
+    margin: 0 0 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--color-border);
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--color-text);
+  }
+  section .content { font-size: 1.25rem; line-height: 1.85; }
+  section .content div { padding: 6px 0; }
+
+  /* ── 왼쪽: 날씨+시간 통합 카드 ── */
+  #weather-time {
+    flex: 0 0 auto;
+    padding: 0;
+    overflow: hidden;
+  }
+  #weather-time .split-half { padding: 26px 26px; }
+  #weather-time .split-label { margin-bottom: 12px; }
+  .split-row { display: flex; align-items: stretch; }
+  .split-half { flex: 1 1 0; padding: 20px 22px; display: flex; flex-direction: column; }
+  .split-divider { width: 1px; background: var(--color-border); }
+  .split-label {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 10px;
+  }
+  #weather-time .weather-half {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .weather-icon {
+    width: 52px; height: 52px; flex-shrink: 0;
+    border-radius: 14px;
+    background: var(--color-accent-soft);
+    color: var(--color-ink);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .weather-icon svg { width: 30px; height: 30px; }
+  #weather-time .weather-icon { width: 64px; height: 64px; }
+  #weather-time .weather-icon svg { width: 36px; height: 36px; }
+  .weather-text div:first-child { font-size: 1.3rem; font-weight: 700; }
+  .weather-text div:last-child { font-size: 0.9rem; color: var(--color-text-muted); }
+  #weather-time .time-half .datetime-time {
+    font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; color: var(--color-ink);
+  }
+  #weather-time .time-half .datetime-date {
+    font-size: 0.95rem; font-weight: 600; color: var(--color-text-muted); margin-top: 2px;
+  }
+
+  #meal { flex: 1 1 0; }
+  #meal h2 {
+    font-size: 1.4rem;
+    margin: 0 0 8px;
+    padding-bottom: 6px;
+  }
+  #meal .content { flex: 1 1 auto; min-height: 0; overflow-y: auto; font-size: 1rem; line-height: 1.45; }
+  #meal .content div { padding: 8px 0; }
+
+  /* ── 가운데: 공지사항이 위로 당겨짐 ── */
+  #notice {
+    flex: 1 1 0;
+    background: var(--color-ink);
+    border-color: var(--color-ink);
+    color: #fff;
+  }
+  #notice h2 { color: #fff; border-bottom-color: rgba(255,255,255,.25); }
+  #notice .content {
+    flex: 1 1 auto; min-height: 0; overflow-y: auto;
+    display: flex; flex-direction: column; gap: 18px;
+  }
+  .notice-item { font-size: 1.4rem; font-weight: 600; color: #fff; white-space: pre-line; }
+  .notice-scope { display: inline-block; margin-right: 8px; font-size: 1rem; font-weight: 700; color: rgba(255,255,255,.75); }
+
+  /* ── 오른쪽: 시간표+학사일정 통합 카드 ── */
+  #timetable-calendar {
+    flex: 0 0 auto;
+    padding: 0;
+    overflow: hidden;
+  }
+  #timetable-calendar .split-half .content {
+    font-size: 0.92rem; line-height: 1.4;
+  }
+  #timetable-calendar .split-half .content div { padding: 2px 0; }
+  .changed-subject { color: #ff4d4f; font-weight: 600; }
+
+  /* ── 오른쪽: 게시판 (기존 학사일정 자리) ── */
+  #board {
+    flex: 1 1 0;
+  }
+  #board h2 {
+    font-size: 1.4rem;
+    margin: 0 0 8px;
+    padding-bottom: 6px;
+  }
+  #board .content {
+    flex: 1 1 auto; min-height: 0; overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    align-content: start;
+  }
+  .board-card {
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .board-card .thumb {
+    width: 100%; aspect-ratio: 4/3; object-fit: cover; display: block;
+    background: var(--color-accent-soft);
+  }
+  .board-card .card-title {
+    padding: 6px 8px; font-size: 0.78rem; font-weight: 600;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .board-scope-tag {
+    display: inline-block;
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: var(--color-ink);
+    background: var(--color-accent-soft);
+    padding: 1px 6px;
+    border-radius: 999px;
+    margin-right: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div id="dashboard">
+
+  <div id="col-left">
+    <section id="weather-time">
+      <div class="split-row">
+        <div class="split-half">
+          <div class="split-label">날씨</div>
+          <div class="weather-half">
+            <div class="weather-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+            </div>
+            <div class="weather-text">
+              <div>27°C</div>
+              <div>맑음</div>
+            </div>
+          </div>
+        </div>
+        <div class="split-divider"></div>
+        <div class="split-half time-half">
+          <div class="split-label">시간</div>
+          <div class="datetime-time">오후 2:31</div>
+          <div class="datetime-date">8월 26일 수요일</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="board">
+      <h2>게시판</h2>
+      <div class="content">
+        <div class="board-card">
+          <div class="card-title"><span class="board-scope-tag">전체</span>운동회 안내문</div>
+          <div class="thumb"></div>
+        </div>
+        <div class="board-card">
+          <div class="card-title"><span class="board-scope-tag">2학년</span>현장학습 코스표</div>
+          <div class="thumb"></div>
+        </div>
+        <div class="board-card">
+          <div class="card-title">학급 텃밭 사진</div>
+          <div class="thumb"></div>
+        </div>
+        <div class="board-card">
+          <div class="card-title">우리반 규칙</div>
+          <div class="thumb"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div id="col-center">
+    <section id="notice">
+      <h2>공지사항</h2>
+      <div class="content">
+        <div class="notice-item"><span class="notice-scope">[전체]</span>오늘 급식 후 전교 대청소</div>
+        <div class="notice-item"><span class="notice-scope">[2학년]</span>5교시 학년 집회, 강당 집합</div>
+        <div class="notice-item">내일 체육복 챙겨오세요</div>
+      </div>
+    </section>
+  </div>
+
+  <div id="col-right">
+    <section id="timetable-calendar">
+      <div class="split-row">
+        <div class="split-half">
+          <div class="split-label">시간표</div>
+          <div class="content">
+            <div>1교시 국어</div>
+            <div>2교시 수학</div>
+            <div>3교시 <span class="changed-subject">체육</span></div>
+            <div>4교시 기술·가정</div>
+            <div>5교시 국어</div>
+            <div>6교시 사회</div>
+            <div>7교시&nbsp;</div>
+          </div>
+        </div>
+        <div class="split-divider"></div>
+        <div class="split-half">
+          <div class="split-label">학사일정</div>
+          <div class="content">
+            <div>8/28 학교운영위원회</div>
+            <div>8/29 학급별 사진 촬영</div>
+            <div>9/1 2학기 시업식</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="meal">
+      <h2>급식</h2>
+      <div class="content">
+        <div>현미밥</div>
+        <div>미역국</div>
+        <div>제육볶음</div>
+        <div>계란찜</div>
+        <div>배추김치</div>
+      </div>
+    </section>
+  </div>
+
+</div>
+
+</body>
+</html>

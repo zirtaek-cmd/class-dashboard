@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>관리자 페이지 레이아웃 시안</title>
+<link rel="stylesheet" as="style" crossorigin
+  href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+<style>
+  :root {
+    --font-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+    --color-bg: #f7f7fb;
+    --color-surface: #ffffff;
+    --color-border: #e5e7eb;
+    --color-text: #18181b;
+    --color-text-muted: #6b7280;
+    --color-ink: #6366f1;
+    --color-accent-soft: #eef2ff;
+    --radius: 20px;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 10px 28px rgba(0,0,0,.05);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: var(--font-sans);
+    font-size: 18px;
+    color: var(--color-text);
+    background: linear-gradient(180deg, #ffffff 0%, var(--color-accent-soft) 100%);
+  }
+  h1, h2 { font-family: inherit; margin: 0; }
+  button { font-family: inherit; cursor: pointer; }
+
+  #admin-screen {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+  header h1 { font-size: 1.4rem; font-weight: 700; }
+  #user-email { color: var(--color-text-muted); font-size: 0.95rem; margin-right: 12px; }
+  #logout-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+
+  .admin-grid {
+    display: flex;
+    gap: 24px;
+    align-items: stretch;
+  }
+  .admin-col {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .grade-group { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+  .grade-group h2 {
+    width: 64px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    text-align: right;
+  }
+  .class-btn {
+    min-width: 48px;
+    min-height: 48px;
+    border: 2px solid var(--color-border);
+    border-radius: 12px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+  .class-btn.selected {
+    background: var(--color-ink);
+    border-color: var(--color-ink);
+    color: #fff;
+  }
+  .target-btn {
+    min-height: 48px;
+    padding: 0 14px;
+    border: 2px solid var(--color-border);
+    border-radius: 12px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+  .target-btn.selected {
+    background: var(--color-ink);
+    border-color: var(--color-ink);
+    color: #fff;
+  }
+  .all-group { justify-content: center; margin-top: 6px; }
+
+  #target-select-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+  }
+  #target-confirm {
+    margin-top: 6px;
+    color: var(--color-ink);
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+
+  section {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+  }
+  section h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 14px; }
+  #notice-section {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-height: 0;
+  }
+  #notice-section textarea { flex: 1 1 auto; width: 100%; }
+  textarea, input[type="text"] {
+    width: 100%;
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 12px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    resize: vertical;
+  }
+  textarea { min-height: 90px; }
+  .save-btn {
+    margin-top: 14px;
+    padding: 10px 22px;
+    border: none;
+    border-radius: 999px;
+    background: var(--color-ink);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  /* 이미지 업로드 */
+  .file-drop {
+    border: 2px dashed var(--color-border);
+    border-radius: 14px;
+    padding: 22px;
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    margin: 14px 0;
+  }
+
+  /* 게시글 목록 관리 */
+  #post-list-section {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  #post-list-section .content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+  .post-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px;
+    background: var(--color-bg);
+    border-radius: 12px;
+  }
+  .post-row .thumb {
+    width: 56px;
+    height: 56px;
+    border-radius: 10px;
+    object-fit: cover;
+    background: var(--color-accent-soft);
+    flex-shrink: 0;
+  }
+  .post-row .post-meta { flex: 1; min-width: 0; }
+  .post-row .post-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .post-row .post-scope {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    margin-top: 2px;
+  }
+  .post-row .delete-btn {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+  }
+  .post-row .delete-btn:hover { background: #fee2e2; color: #dc2626; }
+</style>
+</head>
+<body>
+
+<div id="admin-screen">
+  <header>
+    <h1>학급 대시보드 관리자</h1>
+    <div>
+      <span id="user-email">teacher@ai.jne.kr</span>
+      <button id="logout-btn">로그아웃</button>
+    </div>
+  </header>
+
+  <div class="admin-grid">
+
+    <!-- 왼쪽: 대상 선택 + 공지사항 + 알림 -->
+    <div class="admin-col">
+      <div id="target-select-card">
+        <div class="grade-group" data-grade="1">
+          <h2>1학년</h2>
+          <button class="class-btn">1</button>
+          <button class="class-btn">2</button>
+          <button class="class-btn">3</button>
+          <button class="target-btn">1학년 전체</button>
+        </div>
+        <div class="grade-group" data-grade="2">
+          <h2>2학년</h2>
+          <button class="class-btn">1</button>
+          <button class="class-btn selected">2</button>
+          <button class="class-btn">3</button>
+          <button class="class-btn">4</button>
+          <button class="target-btn">2학년 전체</button>
+        </div>
+        <div class="grade-group" data-grade="3">
+          <h2>3학년</h2>
+          <button class="class-btn">1</button>
+          <button class="class-btn">2</button>
+          <button class="class-btn">3</button>
+          <button class="class-btn">4</button>
+          <button class="target-btn">3학년 전체</button>
+        </div>
+        <div class="grade-group all-group">
+          <button class="target-btn">전교생</button>
+        </div>
+        <div id="target-confirm">2학년 2반에 게시됩니다</div>
+      </div>
+
+      <section id="notice-section">
+        <h2>공지사항 작성</h2>
+        <textarea placeholder="오늘의 공지사항을 입력하세요">내일 체육복 챙겨오세요</textarea>
+        <button class="save-btn">저장</button>
+      </section>
+
+      <section id="call-section">
+        <h2>알림 보내기</h2>
+        <input type="text" placeholder="알림 메모를 입력하세요">
+        <button class="save-btn">알림 보내기</button>
+      </section>
+    </div>
+
+    <!-- 오른쪽: 이미지 업로드 + 게시글 목록 관리 -->
+    <div class="admin-col">
+      <section id="post-list-section">
+        <h2>게시글 목록 관리</h2>
+        <div class="content">
+          <div class="post-row">
+            <div class="thumb"></div>
+            <div class="post-meta">
+              <div class="post-title">운동회 안내문</div>
+              <div class="post-scope">전교생</div>
+            </div>
+            <button class="delete-btn">✕</button>
+          </div>
+          <div class="post-row">
+            <div class="thumb"></div>
+            <div class="post-meta">
+              <div class="post-title">현장학습 코스표</div>
+              <div class="post-scope">2학년 전체</div>
+            </div>
+            <button class="delete-btn">✕</button>
+          </div>
+          <div class="post-row">
+            <div class="thumb"></div>
+            <div class="post-meta">
+              <div class="post-title">학급 텃밭 사진</div>
+              <div class="post-scope">2학년 2반</div>
+            </div>
+            <button class="delete-btn">✕</button>
+          </div>
+          <div class="post-row">
+            <div class="thumb"></div>
+            <div class="post-meta">
+              <div class="post-title">우리반 규칙</div>
+              <div class="post-scope">2학년 2반</div>
+            </div>
+            <button class="delete-btn">✕</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="upload-section">
+        <h2>이미지 게시판 업로드</h2>
+        <input type="text" placeholder="게시글 제목을 입력하세요">
+        <div class="file-drop">클릭해서 파일 선택 · 캡처 후 Ctrl+V</div>
+        <button class="save-btn">게시하기</button>
+      </section>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

@@ -123,7 +123,7 @@ async function fetchMeal() {
 }
 
 async function fetchSchedule() {
-  const container = document.querySelector("#calendar .content");
+  const container = document.querySelector("#timetable-calendar .calendar-half .content");
   try {
     const { from, to } = weekRangeYmd();
     const url = `https://open.neis.go.kr/hub/SchoolSchedule?KEY=${NEIS_KEY}&Type=json&ATPT_OFCDC_SC_CODE=${ATPT_OFCDC_SC_CODE}&SD_SCHUL_CODE=${SD_SCHUL_CODE}&AA_FROM_YMD=${from}&AA_TO_YMD=${to}`;
@@ -143,7 +143,7 @@ async function fetchSchedule() {
 }
 
 async function fetchTimetable(classId) {
-  const container = document.querySelector("#timetable .content");
+  const container = document.querySelector("#timetable-calendar .timetable-half .content");
   try {
     const [grade, classNm] = classId.split("-");
     const url = `https://open.neis.go.kr/hub/misTimetable?KEY=${NEIS_KEY}&Type=json&ATPT_OFCDC_SC_CODE=${ATPT_OFCDC_SC_CODE}&SD_SCHUL_CODE=${SD_SCHUL_CODE}&GRADE=${grade}&CLASS_NM=${classNm}&ALL_TI_YMD=${todayYmd()}`;
@@ -163,7 +163,7 @@ async function fetchTimetable(classId) {
 }
 
 async function fetchWeather() {
-  const container = document.querySelector("#weather .content");
+  const container = document.querySelector("#weather-time .weather-half");
   try {
     const cached = JSON.parse(localStorage.getItem(WEATHER_CACHE_KEY) || "null");
     if (cached && cached.data?.main && Date.now() - cached.fetchedAt < WEATHER_CACHE_MS) {
@@ -222,8 +222,8 @@ const WEEKDAYS_KO = ["일", "월", "화", "수", "목", "금", "토"];
 let dateTimeIntervalId = null;
 
 function renderDateTime() {
-  const timeEl = document.querySelector("#datetime .datetime-time");
-  const dateEl = document.querySelector("#datetime .datetime-date");
+  const timeEl = document.querySelector("#weather-time .datetime-time");
+  const dateEl = document.querySelector("#weather-time .datetime-date");
   if (!timeEl || !dateEl) return;
   const now = new Date();
   const ampm = now.getHours() < 12 ? "오전" : "오후";

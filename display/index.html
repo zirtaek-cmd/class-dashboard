@@ -118,31 +118,27 @@
   }
   section .content div { padding: 6px 0; }
 
-  /* 날씨/시간표는 내용이 고정 길이라 자연스러운 높이만 차지하고,
-     급식/학사일정은 칼럼 바닥까지 늘어남. 스크롤 없이 한눈에 보이도록
-     급식/시간표는 글자를 조금 작게 잡아 카드 높이를 줄임 */
-  #weather, #timetable { flex: 0 0 auto; }
-  #meal, #calendar { flex: 1 1 0; }
-  #meal .content, #calendar .content {
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: auto;
+  /* ── 왼쪽: 날씨+시간 통합 카드 ── */
+  #weather-time {
+    flex: 0 0 auto;
+    padding: 0;
+    overflow: hidden;
   }
-  #meal .content {
-    font-size: 1rem;
-    line-height: 1.45;
+  #weather-time .split-half { padding: 26px 26px; }
+  #weather-time .split-label { margin-bottom: 12px; }
+  .split-row { display: flex; align-items: stretch; }
+  .split-half { flex: 1 1 0; padding: 20px 22px; display: flex; flex-direction: column; }
+  .split-divider { width: 1px; background: var(--color-border); }
+  .split-label {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: 10px;
   }
-  #meal .content div { padding: 8px 0; }
-  #timetable .content, #calendar .content {
-    font-size: 0.95rem;
-    line-height: 1.4;
-  }
-  #timetable .content div, #calendar .content div { padding: 2px 0; }
-
-  #weather .content {
+  #weather-time .weather-half {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
   }
   .weather-icon {
     width: 64px;
@@ -156,7 +152,53 @@
     justify-content: center;
   }
   .weather-icon svg { width: 36px; height: 36px; }
-  #weather .content .weather-text div { padding: 2px 0; }
+  #weather-time .weather-text div { padding: 2px 0; }
+  #weather-time .time-half .datetime-time {
+    font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; color: var(--color-ink);
+  }
+  #weather-time .time-half .datetime-date {
+    font-size: 0.95rem; font-weight: 600; color: var(--color-text-muted); margin-top: 2px;
+  }
+
+  /* ── 왼쪽: 게시판 (빈 자리, 기능은 다음 단계) ── */
+  #board { flex: 1 1 0; }
+  #board h2 {
+    font-size: 1.4rem;
+    margin: 0 0 8px;
+    padding-bottom: 6px;
+  }
+  #board .content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  /* ── 오른쪽: 시간표+학사일정 통합 카드 ── */
+  #timetable-calendar {
+    flex: 0 0 auto;
+    padding: 0;
+    overflow: hidden;
+  }
+  #timetable-calendar .split-half .content {
+    font-size: 0.92rem; line-height: 1.4;
+  }
+  #timetable-calendar .split-half .content div { padding: 2px 0; }
+  .changed-subject { color: #ff4d4f; font-weight: 600; }
+
+  #meal { flex: 1 1 0; }
+  #meal h2 {
+    font-size: 1.4rem;
+    margin: 0 0 8px;
+    padding-bottom: 6px;
+  }
+  #meal .content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    font-size: 1rem;
+    line-height: 1.45;
+  }
+  #meal .content div { padding: 8px 0; }
 
   #notice {
     flex: 1 1 0;
@@ -230,24 +272,6 @@
     cursor: pointer;
   }
 
-  #datetime {
-    flex-shrink: 0;
-    gap: 2px;
-    padding-top: 10px;
-    padding-bottom: 10px;
-  }
-  #datetime .datetime-time {
-    font-size: 1.6rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    color: var(--color-ink);
-  }
-  #datetime .datetime-date {
-    font-size: 1.15rem;
-    font-weight: 600;
-    color: var(--color-text-muted);
-  }
-
   #change-class-btn {
     position: fixed;
     top: 16px;
@@ -300,21 +324,28 @@
   <button id="change-class-btn">반 변경</button>
 
   <div id="col-left">
-    <section id="weather">
-      <h2>날씨</h2>
-      <div class="content"></div>
+    <section id="weather-time">
+      <div class="split-row">
+        <div class="split-half">
+          <div class="split-label">날씨</div>
+          <div class="weather-half"></div>
+        </div>
+        <div class="split-divider"></div>
+        <div class="split-half time-half">
+          <div class="split-label">시간</div>
+          <div class="datetime-time"></div>
+          <div class="datetime-date"></div>
+        </div>
+      </div>
     </section>
-    <section id="meal">
-      <h2>급식</h2>
+
+    <section id="board">
+      <h2>게시판</h2>
       <div class="content"></div>
     </section>
   </div>
 
   <div id="col-center">
-    <section id="datetime">
-      <div class="datetime-time"></div>
-      <div class="datetime-date"></div>
-    </section>
     <section id="notice">
       <h2>공지사항</h2>
       <div class="content"></div>
@@ -323,12 +354,22 @@
   </div>
 
   <div id="col-right">
-    <section id="timetable">
-      <h2>시간표</h2>
-      <div class="content"></div>
+    <section id="timetable-calendar">
+      <div class="split-row">
+        <div class="split-half timetable-half">
+          <div class="split-label">시간표</div>
+          <div class="content"></div>
+        </div>
+        <div class="split-divider"></div>
+        <div class="split-half calendar-half">
+          <div class="split-label">학사일정</div>
+          <div class="content"></div>
+        </div>
+      </div>
     </section>
-    <section id="calendar">
-      <h2>학사일정</h2>
+
+    <section id="meal">
+      <h2>급식</h2>
       <div class="content"></div>
     </section>
   </div>
