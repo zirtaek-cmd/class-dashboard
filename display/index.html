@@ -213,16 +213,16 @@
     inset: 0;
     background: rgba(15, 15, 25, 0.65);
     display: flex;
-    align-items: center;
+    align-items: stretch;
     justify-content: center;
     z-index: 100;
-    padding: 24px;
+    padding: 20px;
   }
   #board-modal-box {
     background: var(--color-surface);
     border-radius: 20px;
-    max-width: min(94vw, 1100px);
-    max-height: 94vh;
+    width: min(95vw, 1400px);
+    height: 100%;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -230,7 +230,8 @@
   }
   #board-modal-box img {
     width: 100%;
-    max-height: 90vh;
+    flex: 1 1 auto;
+    min-height: 0;
     object-fit: contain;
     background: #000;
   }
