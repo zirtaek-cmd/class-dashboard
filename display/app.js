@@ -1,8 +1,11 @@
 import { db, auth } from "../firebase-config.js";
+import { initializeApp, getApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import {
+  getAuth,
   signInAnonymously,
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 import {
+  getFirestore,
   doc,
   onSnapshot,
   collection,
@@ -10,6 +13,19 @@ import {
   orderBy,
   deleteDoc,
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+// 관리자 페이지 iframe 미리보기 안에서 실행 중이면, 부모 창(admin)의
+// Google 로그인 세션과 sessionStorage를 공유하지 않도록 별도 이름의
+// 보조 Firebase 앱 인스턴스를 만들어 그 인스턴스의 auth/db를 사용한다.
+// 단독 탭(칠판)에서 열릴 때는 지금까지와 동일하게 기본 인스턴스를 쓴다.
+const isEmbedded = window.self !== window.top;
+let activeDb = db;
+let activeAuth = auth;
+if (isEmbedded) {
+  const previewApp = initializeApp(getApp().options, "preview-" + Date.now());
+  activeAuth = getAuth(previewApp);
+  activeDb = getFirestore(previewApp);
+}
 
 const NEIS_KEY = "df0637bd4e434069b21d160875ff44bd";
 const ATPT_OFCDC_SC_CODE = "Q10";
@@ -118,7 +134,7 @@ function enterDashboard(classId) {
   if (weatherIntervalId) clearInterval(weatherIntervalId);
   weatherIntervalId = setInterval(fetchWeather, WEATHER_CACHE_MS);
   startDateTimeClock();
-  signInAnonymously(auth).catch(() => {});
+  signInAnonymously(activeAuth).catch(() => {});
   unsubscribeNoticeFns.forEach((fn) => fn());
   unsubscribeNoticeFns = subscribeNotice(classId);
   if (unsubscribeCalls) unsubscribeCalls();
@@ -307,7 +323,7 @@ function subscribeNotice(classId) {
   const noticesByScope = {};
 
   return Object.entries(targets).map(([scope, targetId]) =>
-    onSnapshot(doc(db, "notices", targetId), (snap) => {
+    onSnapshot(doc(activeDb, "notices", targetId), (snap) => {
       const data = snap.data();
       noticesByScope[scope] = data ? { ...data, gradeLabel: grade } : null;
       renderNotices(container, noticesByScope);
@@ -318,7 +334,7 @@ function subscribeNotice(classId) {
 function subscribeCalls(classId) {
   const overlay = document.getElementById("call-overlay");
   const popupArea = document.getElementById("call-popup-area");
-  const queueRef = collection(db, "calls", classId, "queue");
+  const queueRef = collection(activeDb, "calls", classId, "queue");
   return onSnapshot(query(queueRef, orderBy("timestamp", "desc")), (snap) => {
     const staleDocs = [];
     const activeDocs = [];
@@ -331,7 +347,7 @@ function subscribeCalls(classId) {
       }
     });
     staleDocs.forEach((id) =>
-      deleteDoc(doc(db, "calls", classId, "queue", id)).catch(() => {})
+      deleteDoc(doc(activeDb, "calls", classId, "queue", id)).catch(() => {})
     );
 
     overlay.hidden = activeDocs.length === 0;
@@ -347,7 +363,7 @@ function subscribeCalls(classId) {
       confirmBtn.className = "call-confirm-btn";
       confirmBtn.textContent = "확인";
       confirmBtn.addEventListener("click", () => {
-        deleteDoc(doc(db, "calls", classId, "queue", call.id)).catch(() => {});
+        deleteDoc(doc(activeDb, "calls", classId, "queue", call.id)).catch(() => {});
       });
       card.append(memoEl, confirmBtn);
       popupArea.appendChild(card);
@@ -417,7 +433,7 @@ function subscribeBoard(classId) {
   const postsByScope = {};
 
   return Object.entries(targets).map(([scope, targetId]) => {
-    const postsQuery = query(collection(db, "boards", targetId, "posts"), orderBy("timestamp", "desc"));
+    const postsQuery = query(collection(activeDb, "boards", targetId, "posts"), orderBy("timestamp", "desc"));
     return onSnapshot(postsQuery, (snap) => {
       postsByScope[scope] = snap.docs.map((d) => ({ id: d.id, ...d.data(), gradeLabel: grade }));
       renderBoard(container, postsByScope);
