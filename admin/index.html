@@ -609,6 +609,7 @@
     // 알림 섹션은 display:none 대신 visibility로만 감춰서 자리(높이)를 항상 유지한다.
     // 이렇게 해야 반 / 학년 전체 / 전교생 전환 시 다른 칼럼들의 위치가 흔들리지 않는다.
     const isClassTarget = /^\d-\d$/.test(targetId);
+    callSection.hidden = false;
     callSection.classList.toggle("invisible", !isClassTarget);
     callText.value = "";
 
