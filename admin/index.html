@@ -235,6 +235,7 @@
     object-fit: cover;
     background: var(--color-accent-soft);
     flex-shrink: 0;
+    cursor: pointer;
   }
   .post-row .post-meta { flex: 1; min-width: 0; }
   .post-row .post-title {
@@ -260,6 +261,50 @@
     font-size: 0.9rem;
   }
   .post-row .delete-btn:hover { background: #fee2e2; color: #dc2626; }
+
+  /* 게시글 확대보기 (관리자 페이지) */
+  #post-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(15, 15, 25, 0.65);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  #post-modal-box {
+    background: var(--color-surface);
+    border-radius: 20px;
+    max-width: min(94vw, 900px);
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 64px rgba(0,0,0,.4);
+  }
+  #post-modal-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+  }
+  #post-modal-title-row h3 { font-size: 1rem; font-weight: 700; }
+  #post-modal-close {
+    border: none;
+    background: var(--color-bg);
+    color: var(--color-text-muted);
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    font-size: 0.9rem;
+  }
+  #post-modal-img {
+    width: 100%;
+    max-height: 80vh;
+    object-fit: contain;
+    background: #000;
+  }
 
   /* 이미지 업로드 */
   .file-drop {
@@ -453,6 +498,17 @@
     </div>
 
   </div>
+
+  <div id="post-modal-overlay" hidden>
+    <div id="post-modal-box">
+      <div id="post-modal-title-row">
+        <h3 id="post-modal-title"></h3>
+        <button id="post-modal-close">✕</button>
+      </div>
+      <img id="post-modal-img" alt="확대 이미지">
+    </div>
+  </div>
+
 </div>
 
 <script type="module">
@@ -514,6 +570,9 @@
   const previewSection = document.getElementById("preview-section");
   const previewWrap = document.getElementById("preview-frame-wrap");
   const previewFrame = document.getElementById("preview-frame");
+  const postModalOverlay = document.getElementById("post-modal-overlay");
+  const postModalImg = document.getElementById("post-modal-img");
+  const postModalTitle = document.getElementById("post-modal-title");
 
   document.getElementById("login-btn").addEventListener("click", () => {
     loginError.hidden = true;
@@ -596,6 +655,18 @@
     return `${grade}학년 ${classNo}반`;
   }
 
+  function openPostModal(post) {
+    postModalImg.src = post.imageData;
+    postModalTitle.textContent = post.title;
+    postModalOverlay.hidden = false;
+  }
+  document.getElementById("post-modal-close").addEventListener("click", () => {
+    postModalOverlay.hidden = true;
+  });
+  postModalOverlay.addEventListener("click", (e) => {
+    if (e.target === postModalOverlay) postModalOverlay.hidden = true;
+  });
+
   function selectTarget(targetId) {
     selectedTargetId = targetId;
     document.querySelectorAll(".class-btn, .target-btn").forEach((btn) => {
@@ -642,6 +713,7 @@
         </div>
         <button class="delete-btn" title="삭제">✕</button>
       `;
+      row.querySelector(".thumb").addEventListener("click", () => openPostModal(post));
       row.querySelector(".delete-btn").addEventListener("click", () => {
         if (confirm(`"${post.title}" 게시글을 삭제할까요?`)) {
           deleteDoc(doc(db, "boards", selectedTargetId, "posts", post.id)).catch((err) =>
