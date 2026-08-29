@@ -298,12 +298,13 @@ function renderNotices(container, noticesByScope) {
     if (!data || !data.text) return;
     const item = document.createElement("div");
     item.className = "notice-item";
-    if (scope !== "class") {
-      const label = document.createElement("span");
-      label.className = "notice-scope";
-      label.textContent = scope === "all" ? "[전체]" : `[${data.gradeLabel}학년]`;
-      item.appendChild(label);
-    }
+    const label = document.createElement("span");
+    label.className = "notice-scope";
+    label.textContent =
+      scope === "all" ? "[전체]" :
+      scope === "grade" ? `[${data.gradeLabel}학년]` :
+      `[${data.classLabel}반]`;
+    item.appendChild(label);
     const text = document.createElement("span");
     text.className = "notice-text";
     text.textContent = data.text;
@@ -314,7 +315,7 @@ function renderNotices(container, noticesByScope) {
 
 function subscribeNotice(classId) {
   const container = document.querySelector("#notice .content");
-  const grade = classId.split("-")[0];
+  const [grade, classNo] = classId.split("-");
   const targets = {
     class: classId,
     grade: `grade-${grade}`,
@@ -325,7 +326,7 @@ function subscribeNotice(classId) {
   return Object.entries(targets).map(([scope, targetId]) =>
     onSnapshot(doc(activeDb, "notices", targetId), (snap) => {
       const data = snap.data();
-      noticesByScope[scope] = data ? { ...data, gradeLabel: grade } : null;
+      noticesByScope[scope] = data ? { ...data, gradeLabel: grade, classLabel: classNo } : null;
       renderNotices(container, noticesByScope);
     })
   );
