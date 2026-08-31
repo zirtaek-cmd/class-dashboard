@@ -261,11 +261,31 @@ function weatherIconSvg(main) {
   return WEATHER_ICONS[key] || WEATHER_ICONS.Clouds;
 }
 
+const WEATHER_MAIN_KO = {
+  Clear: "맑음",
+  Clouds: "흐림",
+  Rain: "비",
+  Drizzle: "이슬비",
+  Thunderstorm: "뇌우",
+  Snow: "눈",
+  Mist: "안개",
+  Fog: "안개",
+  Haze: "안개",
+  Smoke: "안개",
+  Dust: "황사",
+  Sand: "황사",
+  Squall: "돌풍",
+};
+
+function weatherMainKo(main) {
+  return WEATHER_MAIN_KO[main] || "흐림";
+}
+
 function renderWeather(container, data) {
   const temp = Math.round(data.main.temp);
   const main = data.weather?.[0]?.main;
-  const desc = data.weather?.[0]?.description ?? "";
-  container.innerHTML = `<div class="weather-icon">${weatherIconSvg(main)}</div><div class="weather-text"><div>${temp}°C</div><div>${desc}</div></div>`;
+  const label = weatherMainKo(main);
+  container.innerHTML = `<div class="weather-icon">${weatherIconSvg(main)}</div><div class="weather-text"><div>${temp}°C</div><div>${label}</div></div>`;
 }
 
 const WEEKDAYS_KO = ["일", "월", "화", "수", "목", "금", "토"];
