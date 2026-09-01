@@ -78,9 +78,6 @@
     color: #fff;
   }
 
-  /* ── 대시보드 전체를 133.33% 크기로 그린 뒤 0.75배로 축소해서
-     항상 정확히 화면 전체(100vw x 100vh)를 채우도록 함.
-     브라우저 zoom 설정에 의존하지 않아 기기마다 다르게 보일 위험이 없음 ── */
   #dashboard {
     width: 133.3333vw;
     height: 133.3333vh;
@@ -125,7 +122,6 @@
   }
   section .content div { padding: 6px 0; }
 
-  /* ── 왼쪽: 날씨+시간 통합 카드 ── */
   #weather-time {
     flex: 0 0 auto;
     padding: 0;
@@ -167,7 +163,6 @@
     font-size: 0.95rem; font-weight: 600; color: var(--color-text-muted); margin-top: 2px;
   }
 
-  /* ── 왼쪽: 게시판 ── */
   #board { flex: 1 1 0; }
   #board h2 {
     font-size: 1.4rem;
@@ -214,7 +209,6 @@
     margin-right: 4px;
   }
 
-  /* ── 게시판 확대 모달 ── */
   #board-modal-overlay {
     position: fixed;
     inset: 0;
@@ -265,14 +259,11 @@
     padding: 0;
   }
 
-  /* ── 오른쪽: 시간표+학사일정 통합 카드 ── */
   #timetable-calendar {
     flex: 5 1 0;
     padding: 0;
     overflow: hidden;
   }
-  /* 시간표는 글자를 키우고(1.1rem), 학사일정은 원래 크기(0.92rem) 유지.
-     줄간격(line-height)은 카드가 커진 만큼 둘 다 넓힘 */
   #timetable-calendar .timetable-half .content {
     font-size: 1.1rem; line-height: 1.8;
   }
@@ -282,9 +273,6 @@
   #timetable-calendar .split-half .content div { padding: 6px 0; }
   .changed-subject { color: #ff4d4f; font-weight: 600; }
 
-  /* 시간표는 자기 내용물(가장 긴 과목명 "인공지능과 생활" 기준) 길이만큼만 딱 차지하고,
-     남는 공간은 전부 학사일정이 흡수해서 넓어짐. 학사일정 내용이 길면 그 넓어진 폭
-     안에서 줄바꿈되어 전부 표시됨(잘리지 않음) */
   #timetable-calendar .timetable-half {
     flex: 0 0 auto;
     min-width: 8rem;
@@ -405,6 +393,38 @@
     border-color: var(--color-ink);
     color: #fff;
   }
+
+  #refresh-btn {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+    z-index: 60;
+    padding: 0;
+  }
+  #refresh-btn:hover {
+    background: var(--color-ink);
+    border-color: var(--color-ink);
+    color: #fff;
+  }
+  #refresh-btn:active svg {
+    transform: rotate(180deg);
+  }
+  #refresh-btn svg {
+    width: 22px;
+    height: 22px;
+    transition: transform .3s;
+  }
 </style>
 </head>
 <body>
@@ -436,6 +456,12 @@
 <div id="dashboard" hidden>
   <div id="call-overlay" hidden></div>
   <button id="change-class-btn">반 변경</button>
+  <button id="refresh-btn" onclick="location.reload()" aria-label="새로고침">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 12a9 9 0 1 1-2.64-6.36"/>
+      <polyline points="21 3 21 9 15 9"/>
+    </svg>
+  </button>
 
   <div id="col-left">
     <section id="weather-time">
