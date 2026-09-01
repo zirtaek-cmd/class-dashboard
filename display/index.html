@@ -77,8 +77,14 @@
     color: #fff;
   }
 
+  /* ── 대시보드 전체를 133.33% 크기로 그린 뒤 0.75배로 축소해서
+     항상 정확히 화면 전체(100vw x 100vh)를 채우도록 함.
+     브라우저 zoom 설정에 의존하지 않아 기기마다 다르게 보일 위험이 없음 ── */
   #dashboard {
-    height: 100vh;
+    width: 133.3333vw;
+    height: 133.3333vh;
+    transform: scale(0.75);
+    transform-origin: top left;
     display: flex;
     gap: 20px;
     padding: 20px;
@@ -90,8 +96,8 @@
     min-height: 0;
   }
   #col-left { flex: 1 1 0; }
-  #col-center { flex: 1.4 1 0; }
-  #col-right { flex: 1 1 0; }
+  #col-center { flex: 1.65 1 0; }
+  #col-right { flex: 0.75 1 0; }
   section {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
@@ -160,7 +166,7 @@
     font-size: 0.95rem; font-weight: 600; color: var(--color-text-muted); margin-top: 2px;
   }
 
-  /* ── 왼쪽: 게시판 (빈 자리, 기능은 다음 단계) ── */
+  /* ── 왼쪽: 게시판 ── */
   #board { flex: 1 1 0; }
   #board h2 {
     font-size: 1.4rem;
@@ -260,17 +266,39 @@
 
   /* ── 오른쪽: 시간표+학사일정 통합 카드 ── */
   #timetable-calendar {
-    flex: 0 0 auto;
+    flex: 5 1 0;
     padding: 0;
     overflow: hidden;
   }
-  #timetable-calendar .split-half .content {
-    font-size: 0.92rem; line-height: 1.4;
+  /* 시간표는 글자를 키우고(1.1rem), 학사일정은 원래 크기(0.92rem) 유지.
+     줄간격(line-height)은 카드가 커진 만큼 둘 다 넓힘 */
+  #timetable-calendar .timetable-half .content {
+    font-size: 1.1rem; line-height: 1.8;
   }
-  #timetable-calendar .split-half .content div { padding: 2px 0; }
+  #timetable-calendar .calendar-half .content {
+    font-size: 0.92rem; line-height: 1.8;
+  }
+  #timetable-calendar .split-half .content div { padding: 6px 0; }
   .changed-subject { color: #ff4d4f; font-weight: 600; }
 
-  #meal { flex: 1 1 0; }
+  /* 시간표는 자기 내용물(가장 긴 과목명 "인공지능과 생활" 기준) 길이만큼만 딱 차지하고,
+     남는 공간은 전부 학사일정이 흡수해서 넓어짐. 학사일정 내용이 길면 그 넓어진 폭
+     안에서 줄바꿈되어 전부 표시됨(잘리지 않음) */
+  #timetable-calendar .timetable-half {
+    flex: 0 0 auto;
+    min-width: 8rem;
+  }
+  #timetable-calendar .timetable-half .content div {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  #timetable-calendar .calendar-half {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  #meal { flex: 5 1 0; }
   #meal h2 {
     font-size: 1.4rem;
     margin: 0 0 8px;
@@ -281,9 +309,9 @@
     min-height: 0;
     overflow-y: auto;
     font-size: 1rem;
-    line-height: 1.45;
+    line-height: 1.7;
   }
-  #meal .content div { padding: 8px 0; }
+  #meal .content div { padding: 12px 0; }
 
   #notice {
     flex: 1 1 0;
@@ -359,7 +387,7 @@
 
   #change-class-btn {
     position: fixed;
-    top: 16px;
+    bottom: 16px;
     right: 16px;
     padding: 10px 18px;
     border: 1px solid var(--color-border);
