@@ -77,6 +77,25 @@
     color: var(--color-text-muted);
     font-size: 0.9rem;
   }
+  /* 신규: 학생용 화면 버튼 — 로그아웃 오른쪽에 배치, 새 탭에서 display 페이지를 염 */
+  #open-display-btn {
+    margin-left: 8px;
+    padding: 8px 16px;
+    border: 1px solid var(--color-ink);
+    border-radius: 999px;
+    background: var(--color-accent-soft);
+    color: var(--color-ink);
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  #open-display-btn:hover {
+    background: var(--color-ink);
+    color: #fff;
+  }
+  #open-display-btn svg { width: 15px; height: 15px; }
 
   .admin-grid {
     display: flex;
@@ -397,6 +416,10 @@
     <div>
       <span id="user-email"></span>
       <button id="logout-btn">로그아웃</button>
+      <button id="open-display-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>
+        학생용 화면 열기
+      </button>
     </div>
   </header>
 
@@ -627,6 +650,11 @@
     if (gradeMatch) return `${gradeMatch[1]}-1`;
     return "1-1";
   }
+
+  document.getElementById("open-display-btn").addEventListener("click", () => {
+    const classId = representativeClassId(selectedTargetId || "1-1");
+    window.open(`../display/index.html?classId=${classId}`, "_blank");
+  });
 
   function updatePreviewFrame(targetId) {
     previewSection.hidden = false;
