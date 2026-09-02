@@ -162,30 +162,6 @@
   #weather-time .time-half .datetime-date {
     font-size: 0.95rem; font-weight: 600; color: var(--color-text-muted); margin-top: 2px;
   }
-  .time-label-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-  }
-  #exam-timer-btn {
-    padding: 4px 12px;
-    border: 1px solid var(--color-border);
-    border-radius: 999px;
-    background: var(--color-bg);
-    color: var(--color-text-muted);
-    font-family: inherit;
-    font-size: 0.75rem;
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: background .15s, color .15s;
-  }
-  #exam-timer-btn:hover {
-    background: var(--color-ink);
-    border-color: var(--color-ink);
-    color: #fff;
-  }
 
   #board { flex: 1 1 0; }
   #board h2 {
@@ -449,36 +425,6 @@
     height: 22px;
     transition: transform .3s;
   }
-
-  #clock-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 90;
-    background: rgba(15, 15, 25, 0.92);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    cursor: pointer;
-  }
-  #clock-overlay .clock-time {
-    font-size: 9rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    color: #fff;
-    font-variant-numeric: tabular-nums;
-  }
-  #clock-overlay .clock-date {
-    font-size: 1.6rem;
-    font-weight: 600;
-    color: rgba(255,255,255,.7);
-  }
-  #clock-overlay .clock-hint {
-    margin-top: 24px;
-    font-size: 1rem;
-    color: rgba(255,255,255,.4);
-  }
 </style>
 </head>
 <body>
@@ -526,10 +472,7 @@
         </div>
         <div class="split-divider"></div>
         <div class="split-half time-half">
-          <div class="time-label-row">
-            <div class="split-label">시간</div>
-            <button id="exam-timer-btn">시험 시간</button>
-          </div>
+          <div class="split-label">시간</div>
           <div class="datetime-time"></div>
           <div class="datetime-date"></div>
         </div>
@@ -582,12 +525,6 @@
     </div>
     <img id="board-modal-img" alt="확대 이미지">
   </div>
-</div>
-
-<div id="clock-overlay" hidden>
-  <div class="clock-time"></div>
-  <div class="clock-date"></div>
-  <div class="clock-hint">화면을 누르면 닫힙니다</div>
 </div>
 
 <script type="module" src="app.js"></script>
