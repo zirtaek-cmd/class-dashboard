@@ -77,7 +77,6 @@
     color: var(--color-text-muted);
     font-size: 0.9rem;
   }
-  /* 신규: 학생용 화면 버튼 — 로그아웃 오른쪽에 배치, 새 탭에서 display 페이지를 염 */
   #open-display-btn {
     margin-left: 8px;
     padding: 8px 16px;
@@ -212,13 +211,10 @@
     font-size: 0.9rem;
   }
 
-  /* 알림 보내기 - 반 단위가 아닐 때는 display:none 대신 visibility로만 감춰서
-     자리(높이)는 그대로 유지 → 대상 전환 시 전체 레이아웃이 흔들리지 않음 */
   #call-section.invisible {
     visibility: hidden;
   }
 
-  /* 게시글 목록 관리 */
   #post-list-section {
     flex: 1 1 auto;
     display: flex;
@@ -281,7 +277,6 @@
   }
   .post-row .delete-btn:hover { background: #fee2e2; color: #dc2626; }
 
-  /* 게시글 확대보기 (관리자 페이지) */
   #post-modal-overlay {
     position: fixed;
     inset: 0;
@@ -325,7 +320,6 @@
     background: #000;
   }
 
-  /* 이미지 업로드 */
   .file-drop {
     display: block;
     border: 2px dashed var(--color-border);
@@ -375,7 +369,6 @@
     margin-bottom: 14px;
   }
 
-  /* 미리보기 */
   #preview-section {
     flex: 1 1 auto;
     display: flex;
@@ -425,7 +418,6 @@
 
   <div class="admin-grid">
 
-    <!-- 왼쪽: 대상 선택 + 공지사항 + 알림 -->
     <div class="admin-col">
       <div id="target-select-card">
         <div class="grade-group" data-grade="1">
@@ -476,7 +468,6 @@
       </section>
     </div>
 
-    <!-- 오른쪽: 게시글 목록 관리 + 이미지 업로드 -->
     <div class="admin-col">
       <section id="post-list-section" hidden>
         <h2>게시판 목록 관리</h2>
@@ -510,7 +501,6 @@
       </section>
     </div>
 
-    <!-- 미리보기: 실제 display 화면 실시간 확인 -->
     <div class="admin-col">
       <section id="preview-section" hidden>
         <h2>미리보기</h2>
@@ -558,9 +548,6 @@
 
   const ALLOWED_DOMAIN = "@ai.jne.kr";
 
-  // 관리자 로그인은 이 탭에만 한정(sessionStorage 기반). 기본(local) persistence를 쓰면
-  // 같은 브라우저의 display 탭까지 이 Google 세션을 공유하게 되어, display 쪽 "확인" 삭제에
-  // 필요한 Anonymous 세션이 깨져버림.
   setPersistence(auth, browserSessionPersistence);
 
   function todayIso() {
@@ -705,8 +692,6 @@
     uploadSection.hidden = false;
     targetConfirm.textContent = targetConfirmText(targetId);
 
-    // 알림 섹션은 display:none 대신 visibility로만 감춰서 자리(높이)를 항상 유지한다.
-    // 이렇게 해야 반 / 학년 전체 / 전교생 전환 시 다른 칼럼들의 위치가 흔들리지 않는다.
     const isClassTarget = /^\d-\d$/.test(targetId);
     callSection.hidden = false;
     callSection.classList.toggle("invisible", !isClassTarget);
@@ -784,6 +769,10 @@
   const MAX_WIDTH = 1000;
   const QUALITY_STEPS = [0.7, 0.5, 0.3];
   const MAX_BYTES = 950 * 1024;
+  // 원본 파일이 이 크기 이하면 리사이즈/재압축 없이 원본 그대로 사용한다.
+  // base64 인코딩 시 약 33% 커지므로(750KB → 약 1000KB), Firestore 문서 한도(1MB)
+  // 안에 안전하게 들어가도록 750KB로 기준을 잡는다.
+  const RAW_PASSTHROUGH_MAX = 750 * 1024;
 
   let pendingImage = null; // { dataUrl, sizeBytes } 또는 null(용량 초과로 거부됨)
 
@@ -827,6 +816,16 @@
     });
   }
 
+  // 원본 파일을 리사이즈/재압축 없이 그대로 base64 dataURL로 변환한다.
+  function fileToDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
   async function resizeAndCompress(file) {
     const img = await loadImage(file);
     const canvas = resizeToCanvas(img);
@@ -843,8 +842,19 @@
 
   async function handleFile(file) {
     if (!file || !file.type.startsWith("image/")) return;
-    dropLabel.textContent = "변환 중...";
-    const { dataUrl, compressedBytes, ok } = await resizeAndCompress(file);
+    dropLabel.textContent = "처리 중...";
+
+    let dataUrl, compressedBytes, ok;
+    if (file.size <= RAW_PASSTHROUGH_MAX) {
+      // 원본이 충분히 작으면 화질 그대로, 리사이즈/재압축 없이 사용
+      dataUrl = await fileToDataUrl(file);
+      compressedBytes = file.size;
+      ok = true;
+    } else {
+      // 원본이 크면 기존처럼 리사이즈 + 단계적 압축
+      ({ dataUrl, compressedBytes, ok } = await resizeAndCompress(file));
+    }
+
     previewImg.src = dataUrl;
     previewFilename.textContent = file.name;
     sizeOriginal.textContent = formatKB(file.size);
