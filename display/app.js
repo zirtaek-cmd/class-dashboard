@@ -14,6 +14,10 @@ import {
   deleteDoc,
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
+// 관리자 페이지 iframe 미리보기 안에서 실행 중이면, 부모 창(admin)의
+// Google 로그인 세션과 sessionStorage를 공유하지 않도록 별도 이름의
+// 보조 Firebase 앱 인스턴스를 만들어 그 인스턴스의 auth/db를 사용한다.
+// 단독 탭(칠판)에서 열릴 때는 지금까지와 동일하게 기본 인스턴스를 쓴다.
 const isEmbedded = window.self !== window.top;
 let activeDb = db;
 let activeAuth = auth;
@@ -458,41 +462,6 @@ function subscribeBoard(classId) {
   });
 }
 
-// ── 시험 시간(큰 시계) 오버레이 ──
-let examClockIntervalId = null;
-
-function renderExamClock() {
-  const timeEl = document.querySelector("#clock-overlay .clock-time");
-  const dateEl = document.querySelector("#clock-overlay .clock-date");
-  if (!timeEl || !dateEl) return;
-  const now = new Date();
-  const h = String(now.getHours()).padStart(2, "0");
-  const m = String(now.getMinutes()).padStart(2, "0");
-  const s = String(now.getSeconds()).padStart(2, "0");
-  timeEl.textContent = `${h}:${m}:${s}`;
-  dateEl.textContent = `${now.getMonth() + 1}월 ${now.getDate()}일 ${WEEKDAYS_KO[now.getDay()]}요일`;
-}
-
-function openExamClock() {
-  const overlay = document.getElementById("clock-overlay");
-  renderExamClock();
-  if (examClockIntervalId) clearInterval(examClockIntervalId);
-  examClockIntervalId = setInterval(renderExamClock, 1000);
-  overlay.hidden = false;
-}
-
-function closeExamClock() {
-  const overlay = document.getElementById("clock-overlay");
-  overlay.hidden = true;
-  if (examClockIntervalId) clearInterval(examClockIntervalId);
-  examClockIntervalId = null;
-}
-
-function initExamClock() {
-  document.getElementById("exam-timer-btn").addEventListener("click", openExamClock);
-  document.getElementById("clock-overlay").addEventListener("click", closeExamClock);
-}
-
 function scheduleMidnightReload() {
   const now = new Date();
   const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 10, 0, 0);
@@ -503,7 +472,6 @@ function scheduleMidnightReload() {
 function init() {
   initClassSelect();
   initBoardModal();
-  initExamClock();
   scheduleMidnightReload();
   const classId = getUrlClassId() || getStoredClassId();
   if (classId) {
