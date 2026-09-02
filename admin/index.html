@@ -490,6 +490,7 @@
             <div><b id="preview-filename"></b></div>
             <div>원본: <span id="size-original"></span> → 압축 후: <span id="size-compressed"></span></div>
           </div>
+          <button class="delete-btn" id="preview-cancel-btn" title="취소">✕</button>
         </div>
 
         <div class="size-error" id="size-error" hidden>
@@ -901,6 +902,14 @@
         break;
       }
     }
+  });
+
+  document.getElementById("preview-cancel-btn").addEventListener("click", () => {
+    pendingImage = null;
+    previewRow.hidden = true;
+    sizeError.hidden = true;
+    fileInput.value = "";
+    updatePostSaveBtn();
   });
 
   postTitleInput.addEventListener("input", updatePostSaveBtn);
