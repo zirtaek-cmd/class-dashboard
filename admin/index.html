@@ -6,1023 +6,903 @@
 <meta name="robots" content="noindex">
 <title>학급 대시보드 관리자</title>
 <link rel="stylesheet" as="style" crossorigin
-  href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
+href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.css">
 <style>
-  :root {
-    --font-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
-    --color-bg: #f7f7fb;
-    --color-surface: #ffffff;
-    --color-border: #e5e7eb;
-    --color-text: #18181b;
-    --color-text-muted: #6b7280;
-    --color-ink: #6366f1;
-    --color-accent-soft: #eef2ff;
-    --radius: 20px;
-    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 10px 28px rgba(0,0,0,.05);
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    min-height: 100vh;
-    font-family: var(--font-sans);
-    font-size: 18px;
-    color: var(--color-text);
-    background: linear-gradient(180deg, #ffffff 0%, var(--color-accent-soft) 100%);
-  }
-  h1, h2, h3 { font-family: inherit; margin: 0; }
-  [hidden] { display: none !important; }
-  button { font-family: inherit; cursor: pointer; }
+:root {
+--font-sans: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+--color-bg: #f7f7fb;
+--color-surface: #ffffff;
+--color-border: #e5e7eb;
+--color-text: #18181b;
+--color-text-muted: #6b7280;
+--color-ink: #6366f1;
+--color-accent-soft: #eef2ff;
+--radius: 20px;
+--shadow: 0 1px 2px rgba(0,0,0,.04), 0 10px 28px rgba(0,0,0,.05);
+}
+* { box-sizing: border-box; }
+body {
+margin: 0;
+min-height: 100vh;
+font-family: var(--font-sans);
+font-size: 18px;
+color: var(--color-text);
+background: linear-gradient(180deg, #ffffff 0%, var(--color-accent-soft) 100%);
+}
+h1, h2, h3 { font-family: inherit; margin: 0; }
+[hidden] { display: none !important; }
+button { font-family: inherit; cursor: pointer; }
 
-  #login-screen {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-  }
-  #login-screen h1 { font-size: 1.8rem; font-weight: 700; }
-  #login-btn {
-    padding: 14px 28px;
-    border: none;
-    border-radius: 999px;
-    background: var(--color-ink);
-    color: #fff;
-    font-size: 1.05rem;
-    font-weight: 700;
-  }
-  #login-error {
-    color: #dc2626;
-    font-weight: 600;
-  }
+#login-screen {
+min-height: 100vh;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+gap: 20px;
+}
+#login-screen h1 { font-size: 1.8rem; font-weight: 700; }
+#login-btn {
+padding: 14px 28px;
+border: none;
+border-radius: 999px;
+background: var(--color-ink);
+color: #fff;
+font-size: 1.05rem;
+font-weight: 700;
+}
+#login-error {
+color: #dc2626;
+font-weight: 600;
+}
 
-  #admin-screen {
-    max-width: 1758px;
-    margin: 0 auto;
-    padding: 32px 24px 80px;
-  }
-  header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 28px;
-  }
-  header h1 { font-size: 1.4rem; font-weight: 700; }
-  #user-email { color: var(--color-text-muted); font-size: 0.95rem; margin-right: 12px; }
-  #logout-btn {
-    padding: 8px 16px;
-    border: 1px solid var(--color-border);
-    border-radius: 999px;
-    background: var(--color-surface);
-    color: var(--color-text-muted);
-    font-size: 0.9rem;
-  }
-  #open-display-btn {
-    margin-left: 8px;
-    padding: 8px 16px;
-    border: 1px solid var(--color-ink);
-    border-radius: 999px;
-    background: var(--color-accent-soft);
-    color: var(--color-ink);
-    font-size: 0.9rem;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
-  #open-display-btn:hover {
-    background: var(--color-ink);
-    color: #fff;
-  }
-  #open-display-btn svg { width: 15px; height: 15px; }
+#admin-screen {
+max-width: 1758px;
+margin: 0 auto;
+padding: 32px 24px 80px;
+}
+header {
+display: flex;
+align-items: center;
+justify-content: space-between;
+margin-bottom: 28px;
+}
+header h1 { font-size: 1.4rem; font-weight: 700; }
+#user-email { color: var(--color-text-muted); font-size: 0.95rem; margin-right: 12px; }
+#logout-btn {
+padding: 8px 16px;
+border: 1px solid var(--color-border);
+border-radius: 999px;
+background: var(--color-surface);
+color: var(--color-text-muted);
+font-size: 0.9rem;
+}
+#open-display-btn {
+margin-left: 8px;
+padding: 8px 16px;
+border: 1px solid var(--color-ink);
+border-radius: 999px;
+background: var(--color-accent-soft);
+color: var(--color-ink);
+font-size: 0.9rem;
+font-weight: 600;
+display: inline-flex;
+align-items: center;
+gap: 6px;
+}
+#open-display-btn:hover {
+background: var(--color-ink);
+color: #fff;
+}
+#open-display-btn svg { width: 15px; height: 15px; }
 
-  .admin-grid {
-    display: flex;
-    gap: 24px;
-    align-items: stretch;
-  }
-  .admin-col {
-    flex: 1 1 0;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-  }
+.admin-grid {
+display: flex;
+gap: 24px;
+align-items: stretch;
+}
+.admin-col {
+flex: 1 1 0;
+min-width: 0;
+display: flex;
+flex-direction: column;
+gap: 24px;
+}
 
-  .grade-group { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
-  .grade-group h2 {
-    width: 64px;
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--color-text-muted);
-    text-align: right;
-  }
-  .class-btn {
-    min-width: 48px;
-    min-height: 48px;
-    border: 2px solid var(--color-border);
-    border-radius: 12px;
-    background: var(--color-surface);
-    color: var(--color-text);
-    font-size: 1.05rem;
-    font-weight: 600;
-  }
-  .class-btn.selected, .class-btn:hover {
-    background: var(--color-ink);
-    border-color: var(--color-ink);
-    color: #fff;
-  }
-  .target-btn {
-    min-height: 48px;
-    padding: 0 14px;
-    border: 2px solid var(--color-border);
-    border-radius: 12px;
-    background: var(--color-surface);
-    color: var(--color-text);
-    font-size: 0.9rem;
-    font-weight: 600;
-  }
-  .target-btn.selected, .target-btn:hover {
-    background: var(--color-ink);
-    border-color: var(--color-ink);
-    color: #fff;
-  }
-  .all-group { justify-content: center; margin-top: 6px; }
+.grade-group { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+.grade-group h2 {
+width: 64px;
+font-size: 0.95rem;
+font-weight: 600;
+color: var(--color-text-muted);
+text-align: right;
+}
+.class-btn {
+min-width: 48px;
+min-height: 48px;
+border: 2px solid var(--color-border);
+border-radius: 12px;
+background: var(--color-surface);
+color: var(--color-text);
+font-size: 1.05rem;
+font-weight: 600;
+}
+.class-btn.selected, .class-btn:hover {
+background: var(--color-ink);
+border-color: var(--color-ink);
+color: #fff;
+}
+.target-btn {
+min-height: 48px;
+padding: 0 14px;
+border: 2px solid var(--color-border);
+border-radius: 12px;
+background: var(--color-surface);
+color: var(--color-text);
+font-size: 0.9rem;
+font-weight: 600;
+}
+.target-btn.selected, .target-btn:hover {
+background: var(--color-ink);
+border-color: var(--color-ink);
+color: #fff;
+}
+.all-group { justify-content: center; margin-top: 6px; }
 
-  #target-select-card {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    padding: 24px;
-  }
-  #target-confirm {
-    margin-top: 6px;
-    color: var(--color-ink);
-    font-size: 0.95rem;
-    font-weight: 700;
-  }
+#target-select-card {
+background: var(--color-surface);
+border: 1px solid var(--color-border);
+border-radius: var(--radius);
+box-shadow: var(--shadow);
+padding: 24px;
+}
+#target-confirm {
+margin-top: 6px;
+color: var(--color-ink);
+font-size: 0.95rem;
+font-weight: 700;
+}
 
-  section {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    padding: 24px;
-  }
-  section h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 14px; }
-  #notice-section {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    min-height: 0;
-  }
-  #notice-list {
-    width: 100%;
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow-y: auto;
-  }
-  #notice-list-empty {
-    color: var(--color-text-muted);
-    font-size: 0.9rem;
-    padding: 8px 0;
-  }
-  .notice-row {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 10px;
-    background: var(--color-bg);
-    border-radius: 12px;
-    margin-bottom: 8px;
-  }
-  .notice-row .notice-text-area { flex: 1; min-width: 0; }
-  .notice-row .notice-body { font-size: 0.95rem; white-space: pre-line; }
-  .notice-row .notice-time { font-size: 0.75rem; color: var(--color-text-muted); margin-top: 4px; }
-  .notice-row .row-actions { display: flex; gap: 6px; flex-shrink: 0; }
-  .icon-btn {
-    width: 30px; height: 30px; border: none; border-radius: 999px;
-    background: var(--color-surface); color: var(--color-text-muted); font-size: 0.85rem;
-  }
-  .icon-btn:hover { background: var(--color-accent-soft); color: var(--color-ink); }
-  .icon-btn.delete:hover { background: #fee2e2; color: #dc2626; }
-  .edit-box { display: flex; flex-direction: column; gap: 8px; width: 100%; }
-  .edit-box textarea {
-    width: 100%; min-height: 70px; padding: 10px; border: 1px solid var(--color-ink);
-    border-radius: 10px; font-family: inherit; font-size: 0.95rem; resize: vertical;
-  }
-  .edit-box .edit-actions { display: flex; gap: 8px; }
-  .small-btn { padding: 6px 14px; border: none; border-radius: 999px; font-size: 0.85rem; font-weight: 700; }
-  .small-btn.save { background: var(--color-ink); color: #fff; }
-  .small-btn.cancel { background: var(--color-border); color: var(--color-text); }
+section {
+background: var(--color-surface);
+border: 1px solid var(--color-border);
+border-radius: var(--radius);
+box-shadow: var(--shadow);
+padding: 24px;
+}
+section h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 14px; }
+#notice-section {
+flex: 1 1 auto;
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+min-height: 0;
+}
+#notice-section textarea { flex: 1 1 auto; width: 100%; }
+textarea, input[type="text"] {
+width: 100%;
+font-family: inherit;
+font-size: 1rem;
+padding: 12px 14px;
+border: 1px solid var(--color-border);
+border-radius: 12px;
+resize: vertical;
+}
+textarea { min-height: 90px; }
+.save-btn {
+margin-top: 14px;
+padding: 10px 22px;
+border: none;
+border-radius: 999px;
+background: var(--color-ink);
+color: #fff;
+font-size: 1rem;
+font-weight: 700;
+}
+.save-btn:disabled {
+background: var(--color-border);
+color: var(--color-text-muted);
+cursor: not-allowed;
+}
+.save-feedback {
+margin-left: 12px;
+color: var(--color-ink);
+font-weight: 600;
+font-size: 0.9rem;
+}
 
-  #notice-section textarea { width: 100%; }
-  textarea, input[type="text"] {
-    width: 100%;
-    font-family: inherit;
-    font-size: 1rem;
-    padding: 12px 14px;
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
-    resize: vertical;
-  }
-  textarea { min-height: 90px; }
-  .save-btn {
-    margin-top: 14px;
-    padding: 10px 22px;
-    border: none;
-    border-radius: 999px;
-    background: var(--color-ink);
-    color: #fff;
-    font-size: 1rem;
-    font-weight: 700;
-  }
-  .save-btn:disabled {
-    background: var(--color-border);
-    color: var(--color-text-muted);
-    cursor: not-allowed;
-  }
-  .save-feedback {
-    margin-left: 12px;
-    color: var(--color-ink);
-    font-weight: 600;
-    font-size: 0.9rem;
-  }
+#call-section.invisible {
+visibility: hidden;
+}
 
-  #call-section.invisible {
-    visibility: hidden;
-  }
+#post-list-section {
+flex: 1 1 auto;
+display: flex;
+flex-direction: column;
+min-height: 0;
+}
+#post-list-section .content {
+display: flex;
+flex-direction: column;
+gap: 10px;
+flex: 1 1 auto;
+min-height: 0;
+max-height: 420px;
+overflow-y: auto;
+}
+#post-list-empty {
+color: var(--color-text-muted);
+font-size: 0.9rem;
+padding: 12px 0;
+}
+.post-row {
+display: flex;
+align-items: center;
+gap: 12px;
+padding: 10px;
+background: var(--color-bg);
+border-radius: 12px;
+}
+.post-row .thumb {
+width: 56px;
+height: 56px;
+border-radius: 10px;
+object-fit: cover;
+background: var(--color-accent-soft);
+flex-shrink: 0;
+cursor: pointer;
+}
+.post-row .post-meta { flex: 1; min-width: 0; }
+.post-row .post-title {
+font-size: 0.95rem;
+font-weight: 600;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+}
+.post-row .post-scope {
+font-size: 0.78rem;
+color: var(--color-text-muted);
+margin-top: 2px;
+}
+.post-row .delete-btn {
+flex-shrink: 0;
+width: 32px;
+height: 32px;
+border: none;
+border-radius: 999px;
+background: var(--color-surface);
+color: var(--color-text-muted);
+font-size: 0.9rem;
+}
+.post-row .delete-btn:hover { background: #fee2e2; color: #dc2626; }
 
-  #post-list-section {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-  }
-  #post-list-section .content {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    flex: 1 1 auto;
-    min-height: 0;
-    max-height: 420px;
-    overflow-y: auto;
-  }
-  #post-list-empty {
-    color: var(--color-text-muted);
-    font-size: 0.9rem;
-    padding: 12px 0;
-  }
-  .post-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px;
-    background: var(--color-bg);
-    border-radius: 12px;
-  }
-  .post-row .thumb {
-    width: 56px;
-    height: 56px;
-    border-radius: 10px;
-    object-fit: cover;
-    background: var(--color-accent-soft);
-    flex-shrink: 0;
-    cursor: pointer;
-  }
-  .post-row .post-meta { flex: 1; min-width: 0; }
-  .post-row .post-title {
-    font-size: 0.95rem;
-    font-weight: 600;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .post-row .post-scope {
-    font-size: 0.78rem;
-    color: var(--color-text-muted);
-    margin-top: 2px;
-  }
-  .post-row .delete-btn {
-    flex-shrink: 0;
-    width: 32px;
-    height: 32px;
-    border: none;
-    border-radius: 999px;
-    background: var(--color-surface);
-    color: var(--color-text-muted);
-    font-size: 0.9rem;
-  }
-  .post-row .delete-btn:hover { background: #fee2e2; color: #dc2626; }
+#post-modal-overlay {
+position: fixed;
+inset: 0;
+z-index: 100;
+background: rgba(15, 15, 25, 0.65);
+display: flex;
+align-items: center;
+justify-content: center;
+padding: 24px;
+}
+#post-modal-box {
+background: var(--color-surface);
+border-radius: 20px;
+max-width: min(94vw, 900px);
+max-height: 90vh;
+overflow: hidden;
+display: flex;
+flex-direction: column;
+box-shadow: 0 24px 64px rgba(0,0,0,.4);
+}
+#post-modal-title-row {
+display: flex;
+align-items: center;
+justify-content: space-between;
+padding: 10px 16px;
+}
+#post-modal-title-row h3 { font-size: 1rem; font-weight: 700; }
+#post-modal-close {
+border: none;
+background: var(--color-bg);
+color: var(--color-text-muted);
+width: 28px;
+height: 28px;
+border-radius: 999px;
+font-size: 0.9rem;
+}
+#post-modal-img {
+width: 100%;
+max-height: 80vh;
+object-fit: contain;
+background: #000;
+}
 
-  #post-modal-overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 100;
-    background: rgba(15, 15, 25, 0.65);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-  }
-  #post-modal-box {
-    background: var(--color-surface);
-    border-radius: 20px;
-    max-width: min(94vw, 900px);
-    max-height: 90vh;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 24px 64px rgba(0,0,0,.4);
-  }
-  #post-modal-title-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 16px;
-  }
-  #post-modal-title-row h3 { font-size: 1rem; font-weight: 700; }
-  #post-modal-close {
-    border: none;
-    background: var(--color-bg);
-    color: var(--color-text-muted);
-    width: 28px;
-    height: 28px;
-    border-radius: 999px;
-    font-size: 0.9rem;
-  }
-  #post-modal-img {
-    width: 100%;
-    max-height: 80vh;
-    object-fit: contain;
-    background: #000;
-  }
+.file-drop {
+display: block;
+border: 2px dashed var(--color-border);
+border-radius: 14px;
+padding: 22px;
+text-align: center;
+color: var(--color-text-muted);
+font-size: 0.9rem;
+margin: 14px 0;
+cursor: pointer;
+transition: border-color .15s, background .15s;
+}
+.file-drop:hover, .file-drop.drag-over, .file-drop:focus {
+border-color: var(--color-ink);
+background: var(--color-accent-soft);
+outline: none;
+}
+.file-drop input { display: none; }
 
-  .file-drop {
-    display: block;
-    border: 2px dashed var(--color-border);
-    border-radius: 14px;
-    padding: 22px;
-    text-align: center;
-    color: var(--color-text-muted);
-    font-size: 0.9rem;
-    margin: 14px 0;
-    cursor: pointer;
-    transition: border-color .15s, background .15s;
-  }
-  .file-drop:hover, .file-drop.drag-over, .file-drop:focus {
-    border-color: var(--color-ink);
-    background: var(--color-accent-soft);
-    outline: none;
-  }
-  .file-drop input { display: none; }
+.preview-row {
+display: flex;
+align-items: center;
+gap: 16px;
+margin-bottom: 14px;
+padding: 12px;
+background: var(--color-bg);
+border-radius: 12px;
+}
+.preview-row img {
+width: 72px;
+height: 72px;
+object-fit: cover;
+border-radius: 10px;
+border: 1px solid var(--color-border);
+}
+.preview-meta { font-size: 0.85rem; color: var(--color-text-muted); line-height: 1.6; }
+.preview-meta b { color: var(--color-text); }
 
-  .preview-row {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 14px;
-    padding: 12px;
-    background: var(--color-bg);
-    border-radius: 12px;
-  }
-  .preview-row img {
-    width: 72px;
-    height: 72px;
-    object-fit: cover;
-    border-radius: 10px;
-    border: 1px solid var(--color-border);
-  }
-  .preview-meta { font-size: 0.85rem; color: var(--color-text-muted); line-height: 1.6; }
-  .preview-meta b { color: var(--color-text); }
+.size-error {
+background: #fee2e2;
+border: 1px solid #fca5a5;
+color: #b91c1c;
+border-radius: 12px;
+padding: 12px 14px;
+font-size: 0.9rem;
+font-weight: 600;
+margin-bottom: 14px;
+}
 
-  .size-error {
-    background: #fee2e2;
-    border: 1px solid #fca5a5;
-    color: #b91c1c;
-    border-radius: 12px;
-    padding: 12px 14px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    margin-bottom: 14px;
-  }
-
-  #preview-section {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-  }
-  #preview-frame-wrap {
-    position: relative;
-    flex: 1 1 auto;
-    min-height: 0;
-    overflow: hidden;
-    border-radius: 12px;
-    background: #000;
-  }
-  #preview-frame {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 1920px;
-    height: 1080px;
-    border: none;
-    transform-origin: top left;
-    pointer-events: none;
-  }
+#preview-section {
+flex: 1 1 auto;
+display: flex;
+flex-direction: column;
+min-height: 0;
+}
+#preview-frame-wrap {
+position: relative;
+flex: 1 1 auto;
+min-height: 0;
+overflow: hidden;
+border-radius: 12px;
+background: #000;
+}
+#preview-frame {
+position: absolute;
+top: 0;
+left: 0;
+width: 1920px;
+height: 1080px;
+border: none;
+transform-origin: top left;
+pointer-events: none;
+}
 </style>
 </head>
 <body>
 
 <div id="login-screen">
-  <h1>학급 대시보드 관리자</h1>
-  <button id="login-btn">Google로 로그인</button>
-  <div id="login-error" hidden></div>
+<h1>학급 대시보드 관리자</h1>
+<button id="login-btn">Google로 로그인</button>
+<div id="login-error" hidden></div>
 </div>
 
 <div id="admin-screen" hidden>
-  <header>
-    <h1>학급 대시보드 관리자</h1>
-    <div>
-      <span id="user-email"></span>
-      <button id="logout-btn">로그아웃</button>
-      <button id="open-display-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>
-        학생용 화면 열기
-      </button>
-    </div>
-  </header>
+<header>
+<h1>학급 대시보드 관리자</h1>
+<div>
+<span id="user-email"></span>
+<button id="logout-btn">로그아웃</button>
+<button id="open-display-btn">
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>
+학생용 화면 열기
+</button>
+</div>
+</header>
 
-  <div class="admin-grid">
+<div class="admin-grid">
 
-    <div class="admin-col">
-      <div id="target-select-card">
-        <div class="grade-group" data-grade="1">
-          <h2>1학년</h2>
-          <button class="class-btn" data-target-id="1-1">1</button>
-          <button class="class-btn" data-target-id="1-2">2</button>
-          <button class="class-btn" data-target-id="1-3">3</button>
-          <button class="target-btn" data-target-id="grade-1">1학년 전체</button>
-        </div>
-        <div class="grade-group" data-grade="2">
-          <h2>2학년</h2>
-          <button class="class-btn" data-target-id="2-1">1</button>
-          <button class="class-btn" data-target-id="2-2">2</button>
-          <button class="class-btn" data-target-id="2-3">3</button>
-          <button class="class-btn" data-target-id="2-4">4</button>
-          <button class="target-btn" data-target-id="grade-2">2학년 전체</button>
-        </div>
-        <div class="grade-group" data-grade="3">
-          <h2>3학년</h2>
-          <button class="class-btn" data-target-id="3-1">1</button>
-          <button class="class-btn" data-target-id="3-2">2</button>
-          <button class="class-btn" data-target-id="3-3">3</button>
-          <button class="class-btn" data-target-id="3-4">4</button>
-          <button class="target-btn" data-target-id="grade-3">3학년 전체</button>
-        </div>
-        <div class="grade-group all-group">
-          <button class="target-btn" data-target-id="all">전교생</button>
-        </div>
-        <div id="target-confirm"></div>
-      </div>
+<div class="admin-col">
+<div id="target-select-card">
+<div class="grade-group" data-grade="1">
+<h2>1학년</h2>
+<button class="class-btn" data-target-id="1-1">1</button>
+<button class="class-btn" data-target-id="1-2">2</button>
+<button class="class-btn" data-target-id="1-3">3</button>
+<button class="target-btn" data-target-id="grade-1">1학년 전체</button>
+</div>
+<div class="grade-group" data-grade="2">
+<h2>2학년</h2>
+<button class="class-btn" data-target-id="2-1">1</button>
+<button class="class-btn" data-target-id="2-2">2</button>
+<button class="class-btn" data-target-id="2-3">3</button>
+<button class="class-btn" data-target-id="2-4">4</button>
+<button class="target-btn" data-target-id="grade-2">2학년 전체</button>
+</div>
+<div class="grade-group" data-grade="3">
+<h2>3학년</h2>
+<button class="class-btn" data-target-id="3-1">1</button>
+<button class="class-btn" data-target-id="3-2">2</button>
+<button class="class-btn" data-target-id="3-3">3</button>
+<button class="class-btn" data-target-id="3-4">4</button>
+<button class="target-btn" data-target-id="grade-3">3학년 전체</button>
+</div>
+<div class="grade-group all-group">
+<button class="target-btn" data-target-id="all">전교생</button>
+</div>
+<div id="target-confirm"></div>
+</div>
 
-      <section id="notice-section" hidden>
-        <h2>공지사항 관리</h2>
-        <div id="notice-list"></div>
-        <div id="notice-list-empty" hidden>등록된 공지가 없습니다.</div>
-        <textarea id="new-notice-input" placeholder="새 공지 내용을 입력하세요"></textarea>
-        <div>
-          <button class="save-btn" id="notice-add-btn">추가하기</button>
-          <span class="save-feedback" id="notice-feedback" hidden>추가됨</span>
-        </div>
-      </section>
+<section id="notice-section" hidden>
+<h2>공지사항 작성</h2>
+<textarea id="notice-text" placeholder="오늘의 공지사항을 입력하세요"></textarea>
+<div>
+<button class="save-btn" id="notice-save-btn">저장</button>
+<span class="save-feedback" id="notice-feedback" hidden>저장됨</span>
+</div>
+</section>
 
-      <section id="call-section" hidden>
-        <h2>알림 보내기</h2>
-        <input type="text" id="call-text" placeholder="알림 메모를 입력하세요">
-        <div>
-          <button class="save-btn" id="call-send-btn">알림 보내기</button>
-          <span class="save-feedback" id="call-feedback" hidden>전송됨</span>
-        </div>
-      </section>
-    </div>
+<section id="call-section" hidden>
+<h2>알림 보내기</h2>
+<input type="text" id="call-text" placeholder="알림 메모를 입력하세요">
+<div>
+<button class="save-btn" id="call-send-btn">알림 보내기</button>
+<span class="save-feedback" id="call-feedback" hidden>전송됨</span>
+</div>
+</section>
+</div>
 
-    <div class="admin-col">
-      <section id="post-list-section" hidden>
-        <h2>게시판 목록 관리</h2>
-        <div id="post-list-empty">게시글이 없습니다.</div>
-        <div class="content" id="post-list"></div>
-      </section>
+<div class="admin-col">
+<section id="post-list-section" hidden>
+<h2>게시판 목록 관리</h2>
+<div id="post-list-empty">게시글이 없습니다.</div>
+<div class="content" id="post-list"></div>
+</section>
 
-      <section id="upload-section" hidden>
-        <h2>이미지 게시판 업로드</h2>
-        <input type="text" id="post-title-input" placeholder="게시글 제목을 입력하세요">
+<section id="upload-section" hidden>
+<h2>이미지 게시판 업로드</h2>
+<input type="text" id="post-title-input" placeholder="게시글 제목을 입력하세요">
 
-        <label class="file-drop" id="drop-zone" tabindex="0">
-          <input type="file" id="file-input" accept="image/*">
-          <span id="drop-label">클릭해서 파일 선택 · 드래그 · 캡처 후 이 영역 클릭하고 Ctrl+V</span>
-        </label>
+<label class="file-drop" id="drop-zone" tabindex="0">
+<input type="file" id="file-input" accept="image/*">
+<span id="drop-label">클릭해서 파일 선택 · 드래그 · 캡처 후 이 영역 클릭하고 Ctrl+V</span>
+</label>
 
-        <div class="preview-row" id="preview-row" hidden>
-          <img id="preview-img" alt="미리보기">
-          <div class="preview-meta">
-            <div><b id="preview-filename"></b></div>
-            <div>원본: <span id="size-original"></span> → 압축 후: <span id="size-compressed"></span></div>
-          </div>
+<div class="preview-row" id="preview-row" hidden>
+<img id="preview-img" alt="미리보기">
+<div class="preview-meta">
+<div><b id="preview-filename"></b></div>
+<div>원본: <span id="size-original"></span> → 압축 후: <span id="size-compressed"></span></div>
+</div>
           <button class="delete-btn" id="preview-cancel-btn" title="취소">✕</button>
-        </div>
+</div>
 
-        <div class="size-error" id="size-error" hidden>
-          ⚠️ 이미지가 너무 커서 업로드할 수 없습니다 (최대 압축 후에도 950KB 초과). 다른 이미지를 선택해주세요.
-        </div>
+<div class="size-error" id="size-error" hidden>
+⚠️ 이미지가 너무 커서 업로드할 수 없습니다 (최대 압축 후에도 950KB 초과). 다른 이미지를 선택해주세요.
+</div>
 
-        <button class="save-btn" id="post-save-btn" disabled>게시하기</button>
-        <span class="save-feedback" id="post-feedback" hidden>게시됨</span>
-      </section>
-    </div>
+<button class="save-btn" id="post-save-btn" disabled>게시하기</button>
+<span class="save-feedback" id="post-feedback" hidden>게시됨</span>
+</section>
+</div>
 
-    <div class="admin-col">
-      <section id="preview-section" hidden>
-        <h2>미리보기</h2>
-        <div id="preview-frame-wrap">
-          <iframe id="preview-frame" title="학생용 화면 미리보기" scrolling="no" tabindex="-1"></iframe>
-        </div>
-      </section>
-    </div>
+<div class="admin-col">
+<section id="preview-section" hidden>
+<h2>미리보기</h2>
+<div id="preview-frame-wrap">
+<iframe id="preview-frame" title="학생용 화면 미리보기" scrolling="no" tabindex="-1"></iframe>
+</div>
+</section>
+</div>
 
-  </div>
+</div>
 
-  <div id="post-modal-overlay" hidden>
-    <div id="post-modal-box">
-      <div id="post-modal-title-row">
-        <h3 id="post-modal-title"></h3>
-        <button id="post-modal-close">✕</button>
-      </div>
-      <img id="post-modal-img" alt="확대 이미지">
-    </div>
-  </div>
+<div id="post-modal-overlay" hidden>
+<div id="post-modal-box">
+<div id="post-modal-title-row">
+<h3 id="post-modal-title"></h3>
+<button id="post-modal-close">✕</button>
+</div>
+<img id="post-modal-img" alt="확대 이미지">
+</div>
+</div>
 
 </div>
 
 <script type="module">
-  import { db, auth } from "../firebase-config.js";
-  import {
-    GoogleAuthProvider,
-    signInWithPopup,
-    signOut,
-    onAuthStateChanged,
-    setPersistence,
-    browserSessionPersistence,
-  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-  import {
-    doc,
-    setDoc,
-    updateDoc,
-    onSnapshot,
-    collection,
-    addDoc,
-    deleteDoc,
-    query,
-    orderBy,
-    serverTimestamp,
-  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import { db, auth } from "../firebase-config.js";
+import {
+GoogleAuthProvider,
+signInWithPopup,
+signOut,
+onAuthStateChanged,
+setPersistence,
+browserSessionPersistence,
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import {
+doc,
+setDoc,
+onSnapshot,
+collection,
+addDoc,
+deleteDoc,
+query,
+orderBy,
+serverTimestamp,
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-  const ALLOWED_DOMAIN = "@ai.jne.kr";
+const ALLOWED_DOMAIN = "@ai.jne.kr";
 
-  setPersistence(auth, browserSessionPersistence);
+setPersistence(auth, browserSessionPersistence);
 
-  function todayIso() {
-    const d = new Date();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    return `${d.getFullYear()}-${m}-${day}`;
-  }
+function todayIso() {
+const d = new Date();
+const m = String(d.getMonth() + 1).padStart(2, "0");
+const day = String(d.getDate()).padStart(2, "0");
+return `${d.getFullYear()}-${m}-${day}`;
+}
 
-  const GRADE_CLASS_COUNTS = { "1": 3, "2": 4, "3": 4 };
+const GRADE_CLASS_COUNTS = { "1": 3, "2": 4, "3": 4 };
 
-  let selectedTargetId = null;
-  let unsubscribeNotice = null;
-  let unsubscribePosts = null;
+let selectedTargetId = null;
+let unsubscribeNotice = null;
+let unsubscribePosts = null;
 
-  const loginScreen = document.getElementById("login-screen");
-  const loginError = document.getElementById("login-error");
-  const adminScreen = document.getElementById("admin-screen");
-  const userEmailEl = document.getElementById("user-email");
-  const noticeSection = document.getElementById("notice-section");
-  const callSection = document.getElementById("call-section");
-  const targetConfirm = document.getElementById("target-confirm");
-  const noticeList = document.getElementById("notice-list");
-  const noticeListEmpty = document.getElementById("notice-list-empty");
-  const newNoticeInput = document.getElementById("new-notice-input");
-  const callText = document.getElementById("call-text");
-  const postListSection = document.getElementById("post-list-section");
-  const uploadSection = document.getElementById("upload-section");
-  const postList = document.getElementById("post-list");
-  const postListEmpty = document.getElementById("post-list-empty");
-  const postTitleInput = document.getElementById("post-title-input");
-  const previewSection = document.getElementById("preview-section");
-  const previewWrap = document.getElementById("preview-frame-wrap");
-  const previewFrame = document.getElementById("preview-frame");
-  const postModalOverlay = document.getElementById("post-modal-overlay");
-  const postModalImg = document.getElementById("post-modal-img");
-  const postModalTitle = document.getElementById("post-modal-title");
+const loginScreen = document.getElementById("login-screen");
+const loginError = document.getElementById("login-error");
+const adminScreen = document.getElementById("admin-screen");
+const userEmailEl = document.getElementById("user-email");
+const noticeSection = document.getElementById("notice-section");
+const callSection = document.getElementById("call-section");
+const targetConfirm = document.getElementById("target-confirm");
+const noticeText = document.getElementById("notice-text");
+const callText = document.getElementById("call-text");
+const postListSection = document.getElementById("post-list-section");
+const uploadSection = document.getElementById("upload-section");
+const postList = document.getElementById("post-list");
+const postListEmpty = document.getElementById("post-list-empty");
+const postTitleInput = document.getElementById("post-title-input");
+const previewSection = document.getElementById("preview-section");
+const previewWrap = document.getElementById("preview-frame-wrap");
+const previewFrame = document.getElementById("preview-frame");
+const postModalOverlay = document.getElementById("post-modal-overlay");
+const postModalImg = document.getElementById("post-modal-img");
+const postModalTitle = document.getElementById("post-modal-title");
 
-  document.getElementById("login-btn").addEventListener("click", () => {
-    loginError.hidden = true;
-    signInWithPopup(auth, new GoogleAuthProvider()).catch(() => {
-      loginError.textContent = "로그인에 실패했습니다.";
-      loginError.hidden = false;
-    });
-  });
+document.getElementById("login-btn").addEventListener("click", () => {
+loginError.hidden = true;
+signInWithPopup(auth, new GoogleAuthProvider()).catch(() => {
+loginError.textContent = "로그인에 실패했습니다.";
+loginError.hidden = false;
+});
+});
 
-  document.getElementById("logout-btn").addEventListener("click", () => signOut(auth));
+document.getElementById("logout-btn").addEventListener("click", () => signOut(auth));
 
-  onAuthStateChanged(auth, (user) => {
-    if (!user) {
-      loginScreen.hidden = false;
-      adminScreen.hidden = true;
-      return;
-    }
-    if (!user.email || !user.email.endsWith(ALLOWED_DOMAIN)) {
-      loginError.textContent = "권한이 없는 계정입니다. @ai.jne.kr 계정으로 로그인해주세요.";
-      loginError.hidden = false;
-      signOut(auth);
-      return;
-    }
-    loginScreen.hidden = true;
-    adminScreen.hidden = false;
-    userEmailEl.textContent = user.email;
-  });
+onAuthStateChanged(auth, (user) => {
+if (!user) {
+loginScreen.hidden = false;
+adminScreen.hidden = true;
+return;
+}
+if (!user.email || !user.email.endsWith(ALLOWED_DOMAIN)) {
+loginError.textContent = "권한이 없는 계정입니다. @ai.jne.kr 계정으로 로그인해주세요.";
+loginError.hidden = false;
+signOut(auth);
+return;
+}
+loginScreen.hidden = true;
+adminScreen.hidden = false;
+userEmailEl.textContent = user.email;
+});
 
-  document.querySelectorAll(".class-btn, .target-btn").forEach((btn) => {
-    btn.addEventListener("click", () => selectTarget(btn.dataset.targetId));
-  });
+document.querySelectorAll(".class-btn, .target-btn").forEach((btn) => {
+btn.addEventListener("click", () => selectTarget(btn.dataset.targetId));
+});
 
-  function targetConfirmText(targetId) {
-    if (targetId === "all") return "전교생에게 게시됩니다";
-    const gradeMatch = targetId.match(/^grade-(\d)$/);
-    if (gradeMatch) {
-      const grade = gradeMatch[1];
-      const count = GRADE_CLASS_COUNTS[grade];
-      const classList = Array.from({ length: count }, (_, i) => i + 1).join("·");
-      return `${grade}학년 전체(${classList}반)에 게시됩니다`;
-    }
-    const [grade, classNo] = targetId.split("-");
-    return `${grade}학년 ${classNo}반에 게시됩니다`;
-  }
+function targetConfirmText(targetId) {
+if (targetId === "all") return "전교생에게 게시됩니다";
+const gradeMatch = targetId.match(/^grade-(\d)$/);
+if (gradeMatch) {
+const grade = gradeMatch[1];
+const count = GRADE_CLASS_COUNTS[grade];
+const classList = Array.from({ length: count }, (_, i) => i + 1).join("·");
+return `${grade}학년 전체(${classList}반)에 게시됩니다`;
+}
+const [grade, classNo] = targetId.split("-");
+return `${grade}학년 ${classNo}반에 게시됩니다`;
+}
 
-  const PREVIEW_W = 1920;
-  const PREVIEW_H = 1080;
+const PREVIEW_W = 1920;
+const PREVIEW_H = 1080;
 
-  function representativeClassId(targetId) {
-    if (/^\d-\d$/.test(targetId)) return targetId;
-    const gradeMatch = targetId.match(/^grade-(\d)$/);
-    if (gradeMatch) return `${gradeMatch[1]}-1`;
-    return "1-1";
-  }
+function representativeClassId(targetId) {
+if (/^\d-\d$/.test(targetId)) return targetId;
+const gradeMatch = targetId.match(/^grade-(\d)$/);
+if (gradeMatch) return `${gradeMatch[1]}-1`;
+return "1-1";
+}
 
-  document.getElementById("open-display-btn").addEventListener("click", () => {
-    const classId = representativeClassId(selectedTargetId || "1-1");
-    window.open(`../display/index.html?classId=${classId}`, "_blank");
-  });
+document.getElementById("open-display-btn").addEventListener("click", () => {
+const classId = representativeClassId(selectedTargetId || "1-1");
+window.open(`../display/index.html?classId=${classId}`, "_blank");
+});
 
-  function updatePreviewFrame(targetId) {
-    previewSection.hidden = false;
-    const classId = representativeClassId(targetId);
-    const src = `../display/index.html?classId=${classId}`;
-    if (previewFrame.src.endsWith(src)) return;
-    previewFrame.src = src;
-  }
+function updatePreviewFrame(targetId) {
+previewSection.hidden = false;
+const classId = representativeClassId(targetId);
+const src = `../display/index.html?classId=${classId}`;
+if (previewFrame.src.endsWith(src)) return;
+previewFrame.src = src;
+}
 
-  function scalePreviewFrame() {
-    const w = previewWrap.clientWidth;
-    const h = previewWrap.clientHeight;
-    if (!w || !h) return;
-    const scale = Math.min(w / PREVIEW_W, h / PREVIEW_H);
-    const x = (w - PREVIEW_W * scale) / 2;
-    const y = (h - PREVIEW_H * scale) / 2;
-    previewFrame.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
-  }
-  new ResizeObserver(scalePreviewFrame).observe(previewWrap);
+function scalePreviewFrame() {
+const w = previewWrap.clientWidth;
+const h = previewWrap.clientHeight;
+if (!w || !h) return;
+const scale = Math.min(w / PREVIEW_W, h / PREVIEW_H);
+const x = (w - PREVIEW_W * scale) / 2;
+const y = (h - PREVIEW_H * scale) / 2;
+previewFrame.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+}
+new ResizeObserver(scalePreviewFrame).observe(previewWrap);
 
-  function targetScopeLabel(targetId) {
-    if (targetId === "all") return "전교생";
-    const gradeMatch = targetId.match(/^grade-(\d)$/);
-    if (gradeMatch) return `${gradeMatch[1]}학년 전체`;
-    const [grade, classNo] = targetId.split("-");
-    return `${grade}학년 ${classNo}반`;
-  }
+function targetScopeLabel(targetId) {
+if (targetId === "all") return "전교생";
+const gradeMatch = targetId.match(/^grade-(\d)$/);
+if (gradeMatch) return `${gradeMatch[1]}학년 전체`;
+const [grade, classNo] = targetId.split("-");
+return `${grade}학년 ${classNo}반`;
+}
 
-  function openPostModal(post) {
-    postModalImg.src = post.imageData;
-    postModalTitle.textContent = post.title;
-    postModalOverlay.hidden = false;
-  }
-  document.getElementById("post-modal-close").addEventListener("click", () => {
-    postModalOverlay.hidden = true;
-  });
-  postModalOverlay.addEventListener("click", (e) => {
-    if (e.target === postModalOverlay) postModalOverlay.hidden = true;
-  });
+function openPostModal(post) {
+postModalImg.src = post.imageData;
+postModalTitle.textContent = post.title;
+postModalOverlay.hidden = false;
+}
+document.getElementById("post-modal-close").addEventListener("click", () => {
+postModalOverlay.hidden = true;
+});
+postModalOverlay.addEventListener("click", (e) => {
+if (e.target === postModalOverlay) postModalOverlay.hidden = true;
+});
 
-  function selectTarget(targetId) {
-    selectedTargetId = targetId;
-    document.querySelectorAll(".class-btn, .target-btn").forEach((btn) => {
-      btn.classList.toggle("selected", btn.dataset.targetId === targetId);
-    });
-    noticeSection.hidden = false;
-    postListSection.hidden = false;
-    uploadSection.hidden = false;
-    targetConfirm.textContent = targetConfirmText(targetId);
+function selectTarget(targetId) {
+selectedTargetId = targetId;
+document.querySelectorAll(".class-btn, .target-btn").forEach((btn) => {
+btn.classList.toggle("selected", btn.dataset.targetId === targetId);
+});
+noticeSection.hidden = false;
+postListSection.hidden = false;
+uploadSection.hidden = false;
+targetConfirm.textContent = targetConfirmText(targetId);
 
-    const isClassTarget = /^\d-\d$/.test(targetId);
-    callSection.hidden = false;
-    callSection.classList.toggle("invisible", !isClassTarget);
-    callText.value = "";
+const isClassTarget = /^\d-\d$/.test(targetId);
+callSection.hidden = false;
+callSection.classList.toggle("invisible", !isClassTarget);
+callText.value = "";
 
-    updatePreviewFrame(targetId);
+updatePreviewFrame(targetId);
 
-    editingNoticeId = null;
-    if (unsubscribeNotice) unsubscribeNotice();
-    const noticesQuery = query(collection(db, "notices", targetId, "items"), orderBy("timestamp", "desc"));
-    unsubscribeNotice = onSnapshot(noticesQuery, (snap) => {
-      renderNoticeList(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-    });
+if (unsubscribeNotice) unsubscribeNotice();
+unsubscribeNotice = onSnapshot(doc(db, "notices", targetId), (snap) => {
+const data = snap.data();
+noticeText.value = data ? data.text : "";
+});
 
-    if (unsubscribePosts) unsubscribePosts();
-    const postsQuery = query(collection(db, "boards", targetId, "posts"), orderBy("timestamp", "desc"));
-    unsubscribePosts = onSnapshot(postsQuery, (snap) => {
-      renderPostList(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-    });
-  }
+if (unsubscribePosts) unsubscribePosts();
+const postsQuery = query(collection(db, "boards", targetId, "posts"), orderBy("timestamp", "desc"));
+unsubscribePosts = onSnapshot(postsQuery, (snap) => {
+renderPostList(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+});
+}
 
-  // ── 공지사항 목록 관리 ──
-  let editingNoticeId = null;
-  let lastNoticeItems = [];
+function renderPostList(posts) {
+postListEmpty.hidden = posts.length > 0;
+postList.innerHTML = "";
+posts.forEach((post) => {
+const row = document.createElement("div");
+row.className = "post-row";
+row.innerHTML = `
+       <img class="thumb" src="${post.imageData}" alt="${post.title}">
+       <div class="post-meta">
+         <div class="post-title">${post.title}</div>
+         <div class="post-scope">${targetScopeLabel(selectedTargetId)}</div>
+       </div>
+       <button class="delete-btn" title="삭제">✕</button>
+     `;
+row.querySelector(".thumb").addEventListener("click", () => openPostModal(post));
+row.querySelector(".delete-btn").addEventListener("click", () => {
+if (confirm(`"${post.title}" 게시글을 삭제할까요?`)) {
+deleteDoc(doc(db, "boards", selectedTargetId, "posts", post.id)).catch((err) =>
+alert("삭제에 실패했습니다: " + err.message)
+);
+}
+});
+postList.appendChild(row);
+});
+}
 
-  function formatNoticeTime(timestamp) {
-    if (!timestamp?.toDate) return "";
-    return timestamp.toDate().toLocaleString("ko-KR", {
-      month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit",
-    });
-  }
+document.getElementById("notice-save-btn").addEventListener("click", async () => {
+if (!selectedTargetId) return;
+try {
+await setDoc(doc(db, "notices", selectedTargetId), {
+text: noticeText.value,
+});
+const feedback = document.getElementById("notice-feedback");
+feedback.hidden = false;
+setTimeout(() => (feedback.hidden = true), 2000);
+} catch (err) {
+alert("공지 저장에 실패했습니다: " + err.message);
+}
+});
 
-  function renderNoticeList(items) {
-    lastNoticeItems = items;
-    noticeListEmpty.hidden = items.length > 0;
-    noticeList.innerHTML = "";
-    items.forEach((item) => {
-      const row = document.createElement("div");
-      row.className = "notice-row";
-      if (editingNoticeId === item.id) {
-        row.innerHTML = `
-          <div class="notice-text-area edit-box">
-            <textarea id="notice-edit-textarea">${item.text}</textarea>
-            <div class="edit-actions">
-              <button class="small-btn save" data-action="save-edit" data-id="${item.id}">저장</button>
-              <button class="small-btn cancel" data-action="cancel-edit">취소</button>
-            </div>
-          </div>
-        `;
-      } else {
-        row.innerHTML = `
-          <div class="notice-text-area">
-            <div class="notice-body">${item.text}</div>
-            <div class="notice-time">${formatNoticeTime(item.timestamp)}</div>
-          </div>
-          <div class="row-actions">
-            <button class="icon-btn" data-action="edit" data-id="${item.id}" title="수정">✎</button>
-            <button class="icon-btn delete" data-action="delete" data-id="${item.id}" title="삭제">✕</button>
-          </div>
-        `;
-      }
-      noticeList.appendChild(row);
-    });
-  }
+document.getElementById("call-send-btn").addEventListener("click", async () => {
+if (!selectedTargetId || !/^\d-\d$/.test(selectedTargetId) || !callText.value.trim()) return;
+await addDoc(collection(db, "calls", selectedTargetId, "queue"), {
+memo: callText.value.trim(),
+timestamp: serverTimestamp(),
+date: todayIso(),
+});
+callText.value = "";
+const feedback = document.getElementById("call-feedback");
+feedback.hidden = false;
+setTimeout(() => (feedback.hidden = true), 2000);
+});
 
-  noticeList.addEventListener("click", (e) => {
-    const btn = e.target.closest("[data-action]");
-    if (!btn) return;
-    const action = btn.dataset.action;
-    const id = btn.dataset.id;
+// ── 이미지 게시판 업로드 ──
+const MAX_WIDTH = 1000;
+const QUALITY_STEPS = [0.7, 0.5, 0.3];
+const MAX_BYTES = 950 * 1024;
+// 원본 파일이 이 크기 이하면 리사이즈/재압축 없이 원본 그대로 사용한다.
+// base64 인코딩 시 약 33% 커지므로(750KB → 약 1000KB), Firestore 문서 한도(1MB)
+// 안에 안전하게 들어가도록 750KB로 기준을 잡는다.
+const RAW_PASSTHROUGH_MAX = 750 * 1024;
 
-    if (action === "edit") {
-      editingNoticeId = id;
-      renderNoticeList(lastNoticeItems);
-    } else if (action === "cancel-edit") {
-      editingNoticeId = null;
-      renderNoticeList(lastNoticeItems);
-    } else if (action === "delete") {
-      if (confirm("이 공지를 삭제할까요?")) {
-        deleteDoc(doc(db, "notices", selectedTargetId, "items", id)).catch((err) =>
-          alert("삭제에 실패했습니다: " + err.message)
-        );
-      }
-    } else if (action === "save-edit") {
-      const textarea = document.getElementById("notice-edit-textarea");
-      const newText = textarea.value.trim();
-      editingNoticeId = null;
-      renderNoticeList(lastNoticeItems);
-      if (newText) {
-        // 수정 시 텍스트만 바꾸고 timestamp는 그대로 둔다 → 학생 화면의 (new) 표시는
-        // 신규 등록 때만 붙고, 단순 수정으로는 다시 붙지 않는다.
-        updateDoc(doc(db, "notices", selectedTargetId, "items", id), { text: newText }).catch((err) =>
-          alert("수정에 실패했습니다: " + err.message)
-        );
-      }
-    }
-  });
+let pendingImage = null; // { dataUrl, sizeBytes } 또는 null(용량 초과로 거부됨)
 
-  document.getElementById("notice-add-btn").addEventListener("click", async () => {
-    const text = newNoticeInput.value.trim();
-    if (!text || !selectedTargetId) return;
-    try {
-      await addDoc(collection(db, "notices", selectedTargetId, "items"), {
-        text,
-        timestamp: serverTimestamp(),
-      });
-      newNoticeInput.value = "";
-      const feedback = document.getElementById("notice-feedback");
-      feedback.hidden = false;
-      setTimeout(() => (feedback.hidden = true), 1800);
-    } catch (err) {
-      alert("공지 추가에 실패했습니다: " + err.message);
-    }
-  });
+const fileInput = document.getElementById("file-input");
+const dropZone = document.getElementById("drop-zone");
+const dropLabel = document.getElementById("drop-label");
+const previewRow = document.getElementById("preview-row");
+const previewImg = document.getElementById("preview-img");
+const previewFilename = document.getElementById("preview-filename");
+const sizeOriginal = document.getElementById("size-original");
+const sizeCompressed = document.getElementById("size-compressed");
+const sizeError = document.getElementById("size-error");
+const postSaveBtn = document.getElementById("post-save-btn");
+const postFeedback = document.getElementById("post-feedback");
 
-  function renderPostList(posts) {
-    postListEmpty.hidden = posts.length > 0;
-    postList.innerHTML = "";
-    posts.forEach((post) => {
-      const row = document.createElement("div");
-      row.className = "post-row";
-      row.innerHTML = `
-        <img class="thumb" src="${post.imageData}" alt="${post.title}">
-        <div class="post-meta">
-          <div class="post-title">${post.title}</div>
-          <div class="post-scope">${targetScopeLabel(selectedTargetId)}</div>
-        </div>
-        <button class="delete-btn" title="삭제">✕</button>
-      `;
-      row.querySelector(".thumb").addEventListener("click", () => openPostModal(post));
-      row.querySelector(".delete-btn").addEventListener("click", () => {
-        if (confirm(`"${post.title}" 게시글을 삭제할까요?`)) {
-          deleteDoc(doc(db, "boards", selectedTargetId, "posts", post.id)).catch((err) =>
-            alert("삭제에 실패했습니다: " + err.message)
-          );
-        }
-      });
-      postList.appendChild(row);
-    });
-  }
+function formatKB(bytes) {
+return (bytes / 1024).toFixed(0) + "KB";
+}
 
-  document.getElementById("call-send-btn").addEventListener("click", async () => {
-    if (!selectedTargetId || !/^\d-\d$/.test(selectedTargetId) || !callText.value.trim()) return;
-    await addDoc(collection(db, "calls", selectedTargetId, "queue"), {
-      memo: callText.value.trim(),
-      timestamp: serverTimestamp(),
-      date: todayIso(),
-    });
-    callText.value = "";
-    const feedback = document.getElementById("call-feedback");
-    feedback.hidden = false;
-    setTimeout(() => (feedback.hidden = true), 2000);
-  });
+function resizeToCanvas(img) {
+const scale = Math.min(1, MAX_WIDTH / img.width);
+const w = Math.round(img.width * scale);
+const h = Math.round(img.height * scale);
+const canvas = document.createElement("canvas");
+canvas.width = w;
+canvas.height = h;
+const ctx = canvas.getContext("2d");
+ctx.drawImage(img, 0, 0, w, h);
+return canvas;
+}
 
-  // ── 이미지 게시판 업로드 ──
-  const MAX_WIDTH = 1000;
-  const QUALITY_STEPS = [0.7, 0.5, 0.3];
-  const MAX_BYTES = 950 * 1024;
-  const RAW_PASSTHROUGH_MAX = 750 * 1024;
+function loadImage(file) {
+return new Promise((resolve, reject) => {
+const img = new Image();
+const reader = new FileReader();
+reader.onload = (e) => { img.src = e.target.result; };
+reader.onerror = reject;
+img.onload = () => resolve(img);
+img.onerror = reject;
+reader.readAsDataURL(file);
+});
+}
 
-  let pendingImage = null;
+// 원본 파일을 리사이즈/재압축 없이 그대로 base64 dataURL로 변환한다.
+function fileToDataUrl(file) {
+return new Promise((resolve, reject) => {
+const reader = new FileReader();
+reader.onload = (e) => resolve(e.target.result);
+reader.onerror = reject;
+reader.readAsDataURL(file);
+});
+}
 
-  const fileInput = document.getElementById("file-input");
-  const dropZone = document.getElementById("drop-zone");
-  const dropLabel = document.getElementById("drop-label");
-  const previewRow = document.getElementById("preview-row");
-  const previewImg = document.getElementById("preview-img");
-  const previewFilename = document.getElementById("preview-filename");
-  const sizeOriginal = document.getElementById("size-original");
-  const sizeCompressed = document.getElementById("size-compressed");
-  const sizeError = document.getElementById("size-error");
-  const postSaveBtn = document.getElementById("post-save-btn");
-  const postFeedback = document.getElementById("post-feedback");
+async function resizeAndCompress(file) {
+const img = await loadImage(file);
+const canvas = resizeToCanvas(img);
+let dataUrl, compressedBytes;
+for (const quality of QUALITY_STEPS) {
+dataUrl = canvas.toDataURL("image/jpeg", quality);
+compressedBytes = Math.round((dataUrl.length - "data:image/jpeg;base64,".length) * 0.75);
+if (compressedBytes <= MAX_BYTES) {
+return { dataUrl, compressedBytes, ok: true };
+}
+}
+return { dataUrl, compressedBytes, ok: false };
+}
 
-  function formatKB(bytes) {
-    return (bytes / 1024).toFixed(0) + "KB";
-  }
+async function handleFile(file) {
+if (!file || !file.type.startsWith("image/")) return;
+dropLabel.textContent = "처리 중...";
 
-  function resizeToCanvas(img) {
-    const scale = Math.min(1, MAX_WIDTH / img.width);
-    const w = Math.round(img.width * scale);
-    const h = Math.round(img.height * scale);
-    const canvas = document.createElement("canvas");
-    canvas.width = w;
-    canvas.height = h;
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(img, 0, 0, w, h);
-    return canvas;
-  }
+let dataUrl, compressedBytes, ok;
+if (file.size <= RAW_PASSTHROUGH_MAX) {
+// 원본이 충분히 작으면 화질 그대로, 리사이즈/재압축 없이 사용
+dataUrl = await fileToDataUrl(file);
+compressedBytes = file.size;
+ok = true;
+} else {
+// 원본이 크면 기존처럼 리사이즈 + 단계적 압축
+({ dataUrl, compressedBytes, ok } = await resizeAndCompress(file));
+}
 
-  function loadImage(file) {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
-      const reader = new FileReader();
-      reader.onload = (e) => { img.src = e.target.result; };
-      reader.onerror = reject;
-      img.onload = () => resolve(img);
-      img.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  }
+previewImg.src = dataUrl;
+previewFilename.textContent = file.name;
+sizeOriginal.textContent = formatKB(file.size);
+sizeCompressed.textContent = formatKB(compressedBytes);
+previewRow.hidden = false;
+dropLabel.textContent = "클릭해서 파일 선택 · 드래그 · 캡처 후 이 영역 클릭하고 Ctrl+V";
 
-  function fileToDataUrl(file) {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (e) => resolve(e.target.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  }
+if (ok) {
+pendingImage = { dataUrl, sizeBytes: compressedBytes };
+sizeError.hidden = true;
+} else {
+pendingImage = null;
+sizeError.hidden = false;
+}
+updatePostSaveBtn();
+}
 
-  async function resizeAndCompress(file) {
-    const img = await loadImage(file);
-    const canvas = resizeToCanvas(img);
-    let dataUrl, compressedBytes;
-    for (const quality of QUALITY_STEPS) {
-      dataUrl = canvas.toDataURL("image/jpeg", quality);
-      compressedBytes = Math.round((dataUrl.length - "data:image/jpeg;base64,".length) * 0.75);
-      if (compressedBytes <= MAX_BYTES) {
-        return { dataUrl, compressedBytes, ok: true };
-      }
-    }
-    return { dataUrl, compressedBytes, ok: false };
-  }
+fileInput.addEventListener("change", (e) => handleFile(e.target.files[0]));
 
-  async function handleFile(file) {
-    if (!file || !file.type.startsWith("image/")) return;
-    dropLabel.textContent = "처리 중...";
+["dragover", "dragenter"].forEach((evt) =>
+dropZone.addEventListener(evt, (e) => {
+e.preventDefault();
+dropZone.classList.add("drag-over");
+})
+);
+["dragleave", "drop"].forEach((evt) =>
+dropZone.addEventListener(evt, (e) => {
+e.preventDefault();
+dropZone.classList.remove("drag-over");
+})
+);
+dropZone.addEventListener("drop", (e) => handleFile(e.dataTransfer.files[0]));
 
-    let dataUrl, compressedBytes, ok;
-    if (file.size <= RAW_PASSTHROUGH_MAX) {
-      dataUrl = await fileToDataUrl(file);
-      compressedBytes = file.size;
-      ok = true;
-    } else {
-      ({ dataUrl, compressedBytes, ok } = await resizeAndCompress(file));
-    }
-
-    previewImg.src = dataUrl;
-    previewFilename.textContent = file.name;
-    sizeOriginal.textContent = formatKB(file.size);
-    sizeCompressed.textContent = formatKB(compressedBytes);
-    previewRow.hidden = false;
-    dropLabel.textContent = "클릭해서 파일 선택 · 드래그 · 캡처 후 이 영역 클릭하고 Ctrl+V";
-
-    if (ok) {
-      pendingImage = { dataUrl, sizeBytes: compressedBytes };
-      sizeError.hidden = true;
-    } else {
-      pendingImage = null;
-      sizeError.hidden = false;
-    }
-    updatePostSaveBtn();
-  }
-
-  fileInput.addEventListener("change", (e) => handleFile(e.target.files[0]));
-
-  ["dragover", "dragenter"].forEach((evt) =>
-    dropZone.addEventListener(evt, (e) => {
-      e.preventDefault();
-      dropZone.classList.add("drag-over");
-    })
-  );
-  ["dragleave", "drop"].forEach((evt) =>
-    dropZone.addEventListener(evt, (e) => {
-      e.preventDefault();
-      dropZone.classList.remove("drag-over");
-    })
-  );
-  dropZone.addEventListener("drop", (e) => handleFile(e.dataTransfer.files[0]));
-
-  document.addEventListener("paste", (e) => {
-    const items = e.clipboardData?.items;
-    if (!items) return;
-    for (const item of items) {
-      if (item.type.startsWith("image/")) {
-        e.preventDefault();
-        const file = item.getAsFile();
-        handleFile(file);
-        dropZone.classList.add("drag-over");
-        setTimeout(() => dropZone.classList.remove("drag-over"), 400);
-        break;
-      }
-    }
-  });
+document.addEventListener("paste", (e) => {
+const items = e.clipboardData?.items;
+if (!items) return;
+for (const item of items) {
+if (item.type.startsWith("image/")) {
+e.preventDefault();
+const file = item.getAsFile();
+handleFile(file);
+dropZone.classList.add("drag-over");
+setTimeout(() => dropZone.classList.remove("drag-over"), 400);
+break;
+}
+}
+});
 
   document.getElementById("preview-cancel-btn").addEventListener("click", () => {
     pendingImage = null;
@@ -1032,31 +912,31 @@
     updatePostSaveBtn();
   });
 
-  postTitleInput.addEventListener("input", updatePostSaveBtn);
-  function updatePostSaveBtn() {
-    postSaveBtn.disabled = !(postTitleInput.value.trim() && pendingImage && selectedTargetId);
-  }
+postTitleInput.addEventListener("input", updatePostSaveBtn);
+function updatePostSaveBtn() {
+postSaveBtn.disabled = !(postTitleInput.value.trim() && pendingImage && selectedTargetId);
+}
 
-  postSaveBtn.addEventListener("click", async () => {
-    if (!pendingImage || !postTitleInput.value.trim() || !selectedTargetId) return;
-    try {
-      await addDoc(collection(db, "boards", selectedTargetId, "posts"), {
-        title: postTitleInput.value.trim(),
-        imageData: pendingImage.dataUrl,
-        date: todayIso(),
-        timestamp: serverTimestamp(),
-      });
-      postTitleInput.value = "";
-      pendingImage = null;
-      previewRow.hidden = true;
-      fileInput.value = "";
-      updatePostSaveBtn();
-      postFeedback.hidden = false;
-      setTimeout(() => (postFeedback.hidden = true), 1800);
-    } catch (err) {
-      alert("게시글 저장에 실패했습니다: " + err.message);
-    }
-  });
+postSaveBtn.addEventListener("click", async () => {
+if (!pendingImage || !postTitleInput.value.trim() || !selectedTargetId) return;
+try {
+await addDoc(collection(db, "boards", selectedTargetId, "posts"), {
+title: postTitleInput.value.trim(),
+imageData: pendingImage.dataUrl,
+date: todayIso(),
+timestamp: serverTimestamp(),
+});
+postTitleInput.value = "";
+pendingImage = null;
+previewRow.hidden = true;
+fileInput.value = "";
+updatePostSaveBtn();
+postFeedback.hidden = false;
+setTimeout(() => (postFeedback.hidden = true), 1800);
+} catch (err) {
+alert("게시글 저장에 실패했습니다: " + err.message);
+}
+});
 </script>
 </body>
 </html>
