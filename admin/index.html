@@ -178,7 +178,47 @@
     align-items: flex-start;
     min-height: 0;
   }
-  #notice-section textarea { flex: 1 1 auto; width: 100%; }
+  #notice-list {
+    width: 100%;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+  #notice-list-empty {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    padding: 8px 0;
+  }
+  .notice-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px;
+    background: var(--color-bg);
+    border-radius: 12px;
+    margin-bottom: 8px;
+  }
+  .notice-row .notice-text-area { flex: 1; min-width: 0; }
+  .notice-row .notice-body { font-size: 0.95rem; white-space: pre-line; }
+  .notice-row .notice-time { font-size: 0.75rem; color: var(--color-text-muted); margin-top: 4px; }
+  .notice-row .row-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .icon-btn {
+    width: 30px; height: 30px; border: none; border-radius: 999px;
+    background: var(--color-surface); color: var(--color-text-muted); font-size: 0.85rem;
+  }
+  .icon-btn:hover { background: var(--color-accent-soft); color: var(--color-ink); }
+  .icon-btn.delete:hover { background: #fee2e2; color: #dc2626; }
+  .edit-box { display: flex; flex-direction: column; gap: 8px; width: 100%; }
+  .edit-box textarea {
+    width: 100%; min-height: 70px; padding: 10px; border: 1px solid var(--color-ink);
+    border-radius: 10px; font-family: inherit; font-size: 0.95rem; resize: vertical;
+  }
+  .edit-box .edit-actions { display: flex; gap: 8px; }
+  .small-btn { padding: 6px 14px; border: none; border-radius: 999px; font-size: 0.85rem; font-weight: 700; }
+  .small-btn.save { background: var(--color-ink); color: #fff; }
+  .small-btn.cancel { background: var(--color-border); color: var(--color-text); }
+
+  #notice-section textarea { width: 100%; }
   textarea, input[type="text"] {
     width: 100%;
     font-family: inherit;
@@ -450,11 +490,13 @@
       </div>
 
       <section id="notice-section" hidden>
-        <h2>공지사항 작성</h2>
-        <textarea id="notice-text" placeholder="오늘의 공지사항을 입력하세요"></textarea>
+        <h2>공지사항 관리</h2>
+        <div id="notice-list"></div>
+        <div id="notice-list-empty" hidden>등록된 공지가 없습니다.</div>
+        <textarea id="new-notice-input" placeholder="새 공지 내용을 입력하세요"></textarea>
         <div>
-          <button class="save-btn" id="notice-save-btn">저장</button>
-          <span class="save-feedback" id="notice-feedback" hidden>저장됨</span>
+          <button class="save-btn" id="notice-add-btn">추가하기</button>
+          <span class="save-feedback" id="notice-feedback" hidden>추가됨</span>
         </div>
       </section>
 
@@ -538,6 +580,7 @@
   import {
     doc,
     setDoc,
+    updateDoc,
     onSnapshot,
     collection,
     addDoc,
@@ -571,7 +614,9 @@
   const noticeSection = document.getElementById("notice-section");
   const callSection = document.getElementById("call-section");
   const targetConfirm = document.getElementById("target-confirm");
-  const noticeText = document.getElementById("notice-text");
+  const noticeList = document.getElementById("notice-list");
+  const noticeListEmpty = document.getElementById("notice-list-empty");
+  const newNoticeInput = document.getElementById("new-notice-input");
   const callText = document.getElementById("call-text");
   const postListSection = document.getElementById("post-list-section");
   const uploadSection = document.getElementById("upload-section");
@@ -700,10 +745,11 @@
 
     updatePreviewFrame(targetId);
 
+    editingNoticeId = null;
     if (unsubscribeNotice) unsubscribeNotice();
-    unsubscribeNotice = onSnapshot(doc(db, "notices", targetId), (snap) => {
-      const data = snap.data();
-      noticeText.value = data ? data.text : "";
+    const noticesQuery = query(collection(db, "notices", targetId, "items"), orderBy("timestamp", "desc"));
+    unsubscribeNotice = onSnapshot(noticesQuery, (snap) => {
+      renderNoticeList(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
     });
 
     if (unsubscribePosts) unsubscribePosts();
@@ -712,6 +758,100 @@
       renderPostList(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
     });
   }
+
+  // ── 공지사항 목록 관리 ──
+  let editingNoticeId = null;
+  let lastNoticeItems = [];
+
+  function formatNoticeTime(timestamp) {
+    if (!timestamp?.toDate) return "";
+    return timestamp.toDate().toLocaleString("ko-KR", {
+      month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit",
+    });
+  }
+
+  function renderNoticeList(items) {
+    lastNoticeItems = items;
+    noticeListEmpty.hidden = items.length > 0;
+    noticeList.innerHTML = "";
+    items.forEach((item) => {
+      const row = document.createElement("div");
+      row.className = "notice-row";
+      if (editingNoticeId === item.id) {
+        row.innerHTML = `
+          <div class="notice-text-area edit-box">
+            <textarea id="notice-edit-textarea">${item.text}</textarea>
+            <div class="edit-actions">
+              <button class="small-btn save" data-action="save-edit" data-id="${item.id}">저장</button>
+              <button class="small-btn cancel" data-action="cancel-edit">취소</button>
+            </div>
+          </div>
+        `;
+      } else {
+        row.innerHTML = `
+          <div class="notice-text-area">
+            <div class="notice-body">${item.text}</div>
+            <div class="notice-time">${formatNoticeTime(item.timestamp)}</div>
+          </div>
+          <div class="row-actions">
+            <button class="icon-btn" data-action="edit" data-id="${item.id}" title="수정">✎</button>
+            <button class="icon-btn delete" data-action="delete" data-id="${item.id}" title="삭제">✕</button>
+          </div>
+        `;
+      }
+      noticeList.appendChild(row);
+    });
+  }
+
+  noticeList.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-action]");
+    if (!btn) return;
+    const action = btn.dataset.action;
+    const id = btn.dataset.id;
+
+    if (action === "edit") {
+      editingNoticeId = id;
+      renderNoticeList(lastNoticeItems);
+    } else if (action === "cancel-edit") {
+      editingNoticeId = null;
+      renderNoticeList(lastNoticeItems);
+    } else if (action === "delete") {
+      if (confirm("이 공지를 삭제할까요?")) {
+        deleteDoc(doc(db, "notices", selectedTargetId, "items", id)).catch((err) =>
+          alert("삭제에 실패했습니다: " + err.message)
+        );
+      }
+    } else if (action === "save-edit") {
+      const textarea = document.getElementById("notice-edit-textarea");
+      const newText = textarea.value.trim();
+      editingNoticeId = null;
+      renderNoticeList(lastNoticeItems);
+      if (newText) {
+        // 수정 시 텍스트만 바꾸고 timestamp는 그대로 둔다 → 학생 화면의 (new) 표시는
+        // 신규 등록 때만 붙고, 단순 수정으로는 다시 붙지 않는다.
+        updateDoc(doc(db, "notices", selectedTargetId, "items", id), { text: newText }).catch((err) =>
+          alert("수정에 실패했습니다: " + err.message)
+        );
+      }
+    }
+  });
+
+  document.getElementById("notice-add-btn").addEventListener("click", async () => {
+    const text = newNoticeInput.value.trim();
+    if (!text || !selectedTargetId) return;
+    try {
+      await addDoc(collection(db, "notices", selectedTargetId, "items"), {
+        text,
+        timestamp: serverTimestamp(),
+      });
+      newNoticeInput.value = "";
+      const feedback = document.getElementById("notice-feedback");
+      feedback.hidden = false;
+      setTimeout(() => (feedback.hidden = true), 1800);
+    } catch (err) {
+      alert("공지 추가에 실패했습니다: " + err.message);
+    }
+  });
 
   function renderPostList(posts) {
     postListEmpty.hidden = posts.length > 0;
@@ -739,20 +879,6 @@
     });
   }
 
-  document.getElementById("notice-save-btn").addEventListener("click", async () => {
-    if (!selectedTargetId) return;
-    try {
-      await setDoc(doc(db, "notices", selectedTargetId), {
-        text: noticeText.value,
-      });
-      const feedback = document.getElementById("notice-feedback");
-      feedback.hidden = false;
-      setTimeout(() => (feedback.hidden = true), 2000);
-    } catch (err) {
-      alert("공지 저장에 실패했습니다: " + err.message);
-    }
-  });
-
   document.getElementById("call-send-btn").addEventListener("click", async () => {
     if (!selectedTargetId || !/^\d-\d$/.test(selectedTargetId) || !callText.value.trim()) return;
     await addDoc(collection(db, "calls", selectedTargetId, "queue"), {
@@ -770,12 +896,9 @@
   const MAX_WIDTH = 1000;
   const QUALITY_STEPS = [0.7, 0.5, 0.3];
   const MAX_BYTES = 950 * 1024;
-  // 원본 파일이 이 크기 이하면 리사이즈/재압축 없이 원본 그대로 사용한다.
-  // base64 인코딩 시 약 33% 커지므로(750KB → 약 1000KB), Firestore 문서 한도(1MB)
-  // 안에 안전하게 들어가도록 750KB로 기준을 잡는다.
   const RAW_PASSTHROUGH_MAX = 750 * 1024;
 
-  let pendingImage = null; // { dataUrl, sizeBytes } 또는 null(용량 초과로 거부됨)
+  let pendingImage = null;
 
   const fileInput = document.getElementById("file-input");
   const dropZone = document.getElementById("drop-zone");
@@ -817,7 +940,6 @@
     });
   }
 
-  // 원본 파일을 리사이즈/재압축 없이 그대로 base64 dataURL로 변환한다.
   function fileToDataUrl(file) {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -847,12 +969,10 @@
 
     let dataUrl, compressedBytes, ok;
     if (file.size <= RAW_PASSTHROUGH_MAX) {
-      // 원본이 충분히 작으면 화질 그대로, 리사이즈/재압축 없이 사용
       dataUrl = await fileToDataUrl(file);
       compressedBytes = file.size;
       ok = true;
     } else {
-      // 원본이 크면 기존처럼 리사이즈 + 단계적 압축
       ({ dataUrl, compressedBytes, ok } = await resizeAndCompress(file));
     }
 
