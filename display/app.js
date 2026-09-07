@@ -343,10 +343,15 @@ function isNoticeNew(timestamp) {
 
 function renderNotices(container, noticesByScope, labels) {
   container.innerHTML = "";
-  NOTICE_SCOPE_ORDER.forEach((scope) => {
-    const items = noticesByScope[scope] || [];
+
+  const visibleScopes = NOTICE_SCOPE_ORDER.filter((scope) =>
+    (noticesByScope[scope] || []).some((it) => it.text)
+  );
+
+  visibleScopes.forEach((scope, scopeIdx) => {
+    const items = (noticesByScope[scope] || []).filter((it) => it.text);
+
     items.forEach((item, idx) => {
-      if (!item.text) return;
       const div = document.createElement("div");
       div.className = "notice-item";
 
@@ -357,7 +362,6 @@ function renderNotices(container, noticesByScope, labels) {
         div.appendChild(newTag);
       }
 
-      // 같은 범위끼리 묶어서, 그 그룹의 첫 항목에만 범위 태그를 붙인다
       if (idx === 0) {
         const label = document.createElement("span");
         label.className = "notice-scope";
@@ -375,6 +379,13 @@ function renderNotices(container, noticesByScope, labels) {
 
       container.appendChild(div);
     });
+
+    // 마지막(반) 그룹을 제외하고, 실제로 공지가 있는 각 범위가 끝날 때마다 구분선을 넣는다
+    if (scopeIdx < visibleScopes.length - 1) {
+      const divider = document.createElement("div");
+      divider.className = "notice-divider";
+      container.appendChild(divider);
+    }
   });
 }
 
