@@ -54,6 +54,21 @@ async function loadRegularTimetable() {
   return regularTimetableCache;
 }
 
+// 보강/시간표 변경 데이터: { "YYYY-MM-DD": { "학년-반": { "교시": "과목" } } }
+// 해당 날짜·반·교시에 값이 있으면 NEIS 실시간 데이터보다 우선해서 그 과목으로 표시한다.
+// 표에 없는 나머지 교시는 그대로 NEIS 데이터를 사용한다.
+let makeupTimetableCache = null;
+async function loadMakeupTimetable() {
+  if (makeupTimetableCache) return makeupTimetableCache;
+  try {
+    const res = await fetch("../data/makeup-timetable.json");
+    makeupTimetableCache = await res.json();
+  } catch (err) {
+    makeupTimetableCache = {};
+  }
+  return makeupTimetableCache;
+}
+
 function getUrlClassId() {
   return new URLSearchParams(location.search).get("classId");
 }
@@ -198,9 +213,14 @@ async function fetchTimetable(classId) {
     const regularTimetable = await loadRegularTimetable();
     const regularForToday = (regularTimetable[classId] || {})[todayWeekdayKo()] || {};
 
+    const makeupTimetable = await loadMakeupTimetable();
+    const makeupForToday = (makeupTimetable[todayIso()] || {})[classId] || {};
+
     container.innerHTML = Array.from({ length: 7 }, (_, i) => i + 1)
       .map((period) => {
-        const subject = (byPeriod[period] ?? "").trim();
+        const neisSubject = (byPeriod[period] ?? "").trim();
+        const makeupSubject = (makeupForToday[String(period)] ?? "").trim();
+        const subject = makeupSubject || neisSubject;
         const regularSubject = (regularForToday[String(period)] ?? "").trim();
         const changed = subject && regularSubject && subject !== regularSubject;
         const style = changed ? ' style="color:#ff4d4f;font-weight:600;"' : "";
