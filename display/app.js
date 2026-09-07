@@ -329,27 +329,52 @@ function startDateTimeClock() {
   dateTimeIntervalId = setInterval(renderDateTime, 15000);
 }
 
+// ── 공지사항 (목록형 + NEW 표시) ──
 const NOTICE_SCOPE_ORDER = ["all", "grade", "class"];
 
-function renderNotices(container, noticesByScope) {
+// 등록된 날짜가 오늘이면 NEW로 표시한다. 몇 시간이 지났는지가 아니라
+// "자정을 넘겼는가"만 기준으로 삼아서, 자정이 지나면 정확히 몇 시간이든
+// 상관없이 즉시 사라진다.
+function isNoticeNew(timestamp) {
+  const ms = timestamp?.toMillis?.();
+  if (!ms) return false;
+  return new Date(ms).toDateString() === new Date().toDateString();
+}
+
+function renderNotices(container, noticesByScope, labels) {
   container.innerHTML = "";
   NOTICE_SCOPE_ORDER.forEach((scope) => {
-    const data = noticesByScope[scope];
-    if (!data || !data.text) return;
-    const item = document.createElement("div");
-    item.className = "notice-item";
-    const label = document.createElement("span");
-    label.className = "notice-scope";
-    label.textContent =
-      scope === "all" ? "[전체]" :
-      scope === "grade" ? `[${data.gradeLabel}학년]` :
-      `[${data.classLabel}반]`;
-    item.appendChild(label);
-    const text = document.createElement("span");
-    text.className = "notice-text";
-    text.textContent = data.text;
-    item.appendChild(text);
-    container.appendChild(item);
+    const items = noticesByScope[scope] || [];
+    items.forEach((item, idx) => {
+      if (!item.text) return;
+      const div = document.createElement("div");
+      div.className = "notice-item";
+
+      if (isNoticeNew(item.timestamp)) {
+        const newTag = document.createElement("span");
+        newTag.className = "notice-new";
+        newTag.textContent = "NEW";
+        div.appendChild(newTag);
+      }
+
+      // 같은 범위끼리 묶어서, 그 그룹의 첫 항목에만 범위 태그를 붙인다
+      if (idx === 0) {
+        const label = document.createElement("span");
+        label.className = "notice-scope";
+        label.textContent =
+          scope === "all" ? "[전체]" :
+          scope === "grade" ? `[${labels.gradeLabel}학년]` :
+          `[${labels.classLabel}반]`;
+        div.appendChild(label);
+      }
+
+      const text = document.createElement("span");
+      text.className = "notice-text";
+      text.textContent = item.text;
+      div.appendChild(text);
+
+      container.appendChild(div);
+    });
   });
 }
 
@@ -363,13 +388,13 @@ function subscribeNotice(classId) {
   };
   const noticesByScope = {};
 
-  return Object.entries(targets).map(([scope, targetId]) =>
-    onSnapshot(doc(activeDb, "notices", targetId), (snap) => {
-      const data = snap.data();
-      noticesByScope[scope] = data ? { ...data, gradeLabel: grade, classLabel: classNo } : null;
-      renderNotices(container, noticesByScope);
-    })
-  );
+  return Object.entries(targets).map(([scope, targetId]) => {
+    const itemsQuery = query(collection(activeDb, "notices", targetId, "items"), orderBy("timestamp", "desc"));
+    return onSnapshot(itemsQuery, (snap) => {
+      noticesByScope[scope] = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+      renderNotices(container, noticesByScope, { gradeLabel: grade, classLabel: classNo });
+    });
+  });
 }
 
 function subscribeCalls(classId) {
