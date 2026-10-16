@@ -269,35 +269,37 @@ export function activeLesson(week, name, ymd, per) {
 
 // 교체 후보 찾기 (교사 엑셀 매크로 규칙을 그 주 실제 시간표로 적용)
 // 나이스 미등록일은 기본 시간표로 판정하고 후보에 unverified를 붙인다.
-// 반환: { reason } (선택 불가) 또는 { candidates: [{teacher, ymd, per, cls, subj, unverified}] }
-export function findSwapCandidates(base, week, dayStatus, me, ymd1, per1, todayYmd) {
+// targets: 상대 수업을 찾을 주들 [{ week, dayStatus, offset }] (없으면 내 수업이 있는 주만)
+// 반환: { reason } (선택 불가) 또는 { candidates: [{teacher, ymd, per, cls, subj, unverified, offset}] }
+export function findSwapCandidates(base, week, dayStatus, me, ymd1, per1, todayYmd, targets = null) {
   const mine = activeLesson(week, me, ymd1, per1);
   if (!mine) return { reason: "이 칸에는 실제로 하는 수업이 없습니다." };
-  const usable = (ymd) => dayStatus[ymd].type === "normal" || dayStatus[ymd].type === "nodata";
+  const usableIn = (st, ymd) => st[ymd].type === "normal" || st[ymd].type === "nodata";
+  const usable = (ymd) => usableIn(dayStatus, ymd);
   if (!usable(ymd1)) return { reason: `${dayStatus[ymd1].label} 날은 교체할 수 없습니다.` };
   if (ymd1 < todayYmd) return { reason: "지난 수업은 교체할 수 없습니다." };
   if (isExcludedSubject(mine.subj)) return { reason: `${mine.subj} 수업은 교체 대상이 아닙니다.` };
 
   const candidates = [];
-  base.teachers.forEach((t) => {
+  (targets ?? [{ week, dayStatus, offset: 0 }]).forEach(({ week: week2, dayStatus: status2, offset }) => base.teachers.forEach((t) => {
     if (t.name === me || t.restricted) return;
-    Object.entries(week[t.name] ?? {}).forEach(([key, cells]) => {
+    Object.entries(week2[t.name] ?? {}).forEach(([key, cells]) => {
       const [ymd2, per2] = key.split("|");
       if (ymd2 === ymd1 && per2 === per1) return;
-      if (ymd2 < todayYmd || !usable(ymd2)) return;
+      if (ymd2 < todayYmd || !usableIn(status2, ymd2)) return;
       const theirs = cells.find((c) => (c.state === "kept" || c.state === "moved-in" || c.state === "added") && !c.ambiguous);
       if (!theirs || theirs.cls !== mine.cls || isExcludedSubject(theirs.subj)) return;
       if (isBusy(week, t.name, ymd1, per1)) return;
-      if (isBusy(week, me, ymd2, per2)) return;
+      if (isBusy(week2, me, ymd2, per2)) return;
       // 상대가 교체로 그날 몇 시간 연강이 되는지 (상대 부담 확인용)
       const add = { ymd: ymd1, per: per1 };
       const remove = { ymd: ymd2, per: per2 };
       const runAfter = maxConsecutive(week, t.name, ymd1, add, remove);
       const runBefore = maxConsecutive(week, t.name, ymd1);
-      const unverified = dayStatus[ymd1].type === "nodata" || dayStatus[ymd2].type === "nodata";
-      candidates.push({ teacher: t.name, ymd: ymd2, per: per2, cls: theirs.cls, subj: theirs.subj, runAfter, runBefore, unverified });
+      const unverified = dayStatus[ymd1].type === "nodata" || status2[ymd2].type === "nodata";
+      candidates.push({ teacher: t.name, ymd: ymd2, per: per2, cls: theirs.cls, subj: theirs.subj, runAfter, runBefore, unverified, offset });
     });
-  });
+  }));
   candidates.sort((a, b) => (a.ymd + a.per).localeCompare(b.ymd + b.per) || a.teacher.localeCompare(b.teacher));
   return { lesson: mine, candidates };
 }

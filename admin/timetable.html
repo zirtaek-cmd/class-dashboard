@@ -207,6 +207,11 @@
     font-weight: 700;
     margin-bottom: 12px;
   }
+  #swap-weeks { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 0.88rem; margin-bottom: 10px; }
+  #swap-weeks label { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
+  #swap-weeks .dates { color: var(--color-text-muted); font-size: 0.78rem; }
+  .cand .week-tag { font-size: 0.74rem; font-weight: 700; color: var(--color-text-muted); margin-right: 4px; }
+  .partner-week { font-size: 0.85rem; font-weight: 700; margin: 10px 0 4px; }
   #swap-reason { color: #b91c1c; font-weight: 600; font-size: 0.92rem; }
   #swap-count { font-size: 0.88rem; color: var(--color-text-muted); margin-bottom: 8px; }
   #swap-list { display: flex; flex-direction: column; gap: 8px; max-height: 62vh; overflow-y: auto; }
@@ -277,7 +282,7 @@
     <section id="partner-section" hidden>
       <h2><span id="partner-name"></span> 선생님 시간표 <span class="sub">(교체 미리보기)</span></h2>
       <div id="partner-run"></div>
-      <table class="tt-table" id="partner-table"></table>
+      <div id="partner-tables"></div>
       <div class="legend">
         <span><i style="background:#fef2f2;border:1px solid #f87171"></i>교체하면 빠지는 수업</span>
         <span><i style="background:var(--color-target)"></i>교체하면 들어갈 시간</span>
@@ -290,6 +295,7 @@
       <div id="swap-empty">왼쪽 시간표에서 바꾸고 싶은 수업을 누르세요.<br>같은 반을 가르치는 선생님 중 서로 빈 시간이 맞는 수업을 찾아 드립니다.</div>
       <div id="swap-result" hidden>
         <div id="swap-selected"></div>
+        <div id="swap-weeks"></div>
         <div id="swap-reason" hidden></div>
         <div id="swap-count"></div>
         <div id="swap-list"></div>
@@ -367,6 +373,17 @@
   let view = null; // { weekYmds, dayStatus, week, fetchedOn, stale }
   let selected = null; // { ymd, per }
   let loadSeq = 0;
+  // 교체 후보를 찾을 주 (0 = 고른 수업이 있는 주, 1 = 다음 주, 2 = 다다음 주)
+  const SWAP_WEEKS_KEY = "tt-swap-weeks";
+  const WEEK_LABELS = ["이 주", "다음 주", "다다음 주"];
+  let swapWeeks = new Set([0]);
+  try {
+    const saved = JSON.parse(localStorage.getItem(SWAP_WEEKS_KEY) || "null");
+    if (Array.isArray(saved) && saved.length) swapWeeks = new Set(saved.filter((o) => o >= 0 && o <= 2));
+  } catch (err) {}
+  let extraWeeks = {}; // offset → { weekYmds, dayStatus, week } | "loading" | "error"
+  const dowName = (ymd) => DAYS[(new Date(Number(ymd.slice(0, 4)), Number(ymd.slice(4, 6)) - 1, Number(ymd.slice(6, 8))).getDay() + 6) % 7];
+  const weekYmdsAt = (offset) => [0, 1, 2, 3, 4].map((i) => ymdOf(addDays(currentMonday, offset * 7 + i)));
 
   // ── 로그인 ──
   $("login-btn").addEventListener("click", () => {
@@ -491,6 +508,7 @@
   async function loadWeek() {
     const seq = ++loadSeq;
     selected = null;
+    extraWeeks = {};
     const weekYmds = [0, 1, 2, 3, 4].map((i) => ymdOf(addDays(currentMonday, i)));
     $("week-label").textContent = `${mmdd(weekYmds[0])} ~ ${mmdd(weekYmds[4])}`;
     $("loading").hidden = false;
@@ -581,8 +599,8 @@
 
   // 한 교사의 주간 시간표 표. 내 표는 칸을 눌러 고를 수 있고,
   // 상대 표는 교체하면 빠지는 칸(out)과 들어갈 칸(into)을 표시한다.
-  function tableHtml(name, { clickable = false, out = null, into = null } = {}) {
-    const { weekYmds, dayStatus, week } = view;
+  function tableHtml(name, { clickable = false, out = null, into = null, src = view } = {}) {
+    const { weekYmds, dayStatus, week } = src;
     const same = (a, ymd, per) => a && a.ymd === ymd && a.per === per;
     let html = `<tr><th class="period-col"></th>`;
     weekYmds.forEach((ymd, i) => {
@@ -651,10 +669,20 @@
       ? `교체하면 ${dayLabel} 최대 ${c.runAfter}시간 연속 수업 (지금 ${c.runBefore}시간)`
       : `교체해도 ${dayLabel} 연속 수업이 늘지 않습니다 (최대 ${c.runAfter}시간)`;
     run.classList.toggle("warn", c.runAfter >= 4 && c.runAfter > c.runBefore);
-    $("partner-table").innerHTML = tableHtml(c.teacher, {
-      out: { ymd: c.ymd, per: c.per },
-      into: { ymd: selected.ymd, per: selected.per, cls: c.cls, subj: c.subj },
-    });
+    const out = { ymd: c.ymd, per: c.per };
+    const into = { ymd: selected.ymd, per: selected.per, cls: c.cls, subj: c.subj };
+    const range = (ymds) => `${mmdd(ymds[0])}~${mmdd(ymds[4])}`;
+    if (!c.offset) {
+      $("partner-tables").innerHTML = `<table class="tt-table">${tableHtml(c.teacher, { out, into })}</table>`;
+    } else {
+      // 다른 주와 바꾸면 들어갈 시간(이 주)과 빠지는 수업(그 주)을 두 장으로 보여 준다
+      const other = extraWeeks[c.offset];
+      $("partner-tables").innerHTML =
+        `<div class="partner-week">이 주 (${range(weekYmds)}) · 교체하면 들어갈 시간</div>` +
+        `<table class="tt-table">${tableHtml(c.teacher, { into })}</table>` +
+        `<div class="partner-week">${WEEK_LABELS[c.offset]} (${range(other.weekYmds)}) · 교체하면 빠지는 수업</div>` +
+        `<table class="tt-table">${tableHtml(c.teacher, { out, src: other })}</table>`;
+    }
     section.hidden = false;
   }
 
@@ -678,6 +706,39 @@
     td.insertAdjacentHTML("afterbegin", `<span class="target-hint">교체하면 여기로</span>`);
   }
 
+  async function loadExtraWeek(offset) {
+    const seq = loadSeq;
+    extraWeeks[offset] = "loading";
+    const weekYmds = weekYmdsAt(offset);
+    try {
+      const neis = await getNeisWeek(weekYmds);
+      const dayStatus = buildDayStatus(weekYmds, neis.schedule, neis.timetable);
+      const week = computeWeek(base, weekYmds, neis.timetable, makeup, dayStatus);
+      if (seq !== loadSeq) return;
+      extraWeeks[offset] = { weekYmds, dayStatus, week };
+    } catch (err) {
+      if (seq !== loadSeq) return;
+      extraWeeks[offset] = "error";
+    }
+    renderSwap();
+  }
+
+  function renderSwapWeeks() {
+    $("swap-weeks").innerHTML = WEEK_LABELS.map((label, o) => {
+      const ymds = weekYmdsAt(o);
+      return `<label><input type="checkbox" value="${o}"${swapWeeks.has(o) ? " checked" : ""}>${label}` +
+        `<span class="dates">${mmdd(ymds[0])}~${mmdd(ymds[4])}</span></label>`;
+    }).join("");
+  }
+
+  $("swap-weeks").addEventListener("change", (e) => {
+    const o = Number(e.target.value);
+    if (e.target.checked) swapWeeks.add(o);
+    else swapWeeks.delete(o);
+    try { localStorage.setItem(SWAP_WEEKS_KEY, JSON.stringify([...swapWeeks])); } catch (err) {}
+    renderSwap();
+  });
+
   function renderSwap() {
     const empty = $("swap-empty");
     const result = $("swap-result");
@@ -695,7 +756,20 @@
     $("swap-selected").textContent =
       `선택: ${mmdd(ymd)}(${dayName(ymd, weekYmds)}) ${per}교시 · ${lesson.cls} ${lesson.subj}`;
 
-    const res = findSwapCandidates(base, week, dayStatus, me, ymd, per, todayYmd);
+    renderSwapWeeks();
+    const offsets = [...swapWeeks].sort();
+    const targets = [];
+    const pending = [];
+    const failed = [];
+    offsets.forEach((o) => {
+      if (o === 0) return targets.push({ week, dayStatus, offset: 0 });
+      const w = extraWeeks[o];
+      if (w === undefined) loadExtraWeek(o);
+      if (w === undefined || w === "loading") pending.push(WEEK_LABELS[o]);
+      else if (w === "error") failed.push(WEEK_LABELS[o]);
+      else targets.push({ week: w.week, dayStatus: w.dayStatus, offset: o });
+    });
+    const res = findSwapCandidates(base, week, dayStatus, me, ymd, per, todayYmd, targets);
     const reason = $("swap-reason");
     const list = $("swap-list");
     if (res.reason) {
@@ -707,21 +781,32 @@
     }
     reason.hidden = true;
     const anyUnverified = res.candidates.some((c) => c.unverified);
-    $("swap-count").textContent = res.candidates.length
-      ? `교체 가능한 수업 ${res.candidates.length}개 (${anyUnverified ? "나이스 미등록 날은 기본 시간표 기준" : "이 주 실제 시간표 기준"})`
-      : "";
-    if (!res.candidates.length) {
-      list.innerHTML = `<div style="color:var(--color-text-muted)">이 주에는 교체 가능한 수업이 없습니다. 다른 주를 확인해 보세요.</div>`;
+    const notes = [];
+    if (pending.length) notes.push(`${pending.join("·")} 불러오는 중…`);
+    if (failed.length) notes.push(`${failed.join("·")} 나이스를 불러오지 못했습니다`);
+    $("swap-count").textContent = (res.candidates.length
+      ? `교체 가능한 수업 ${res.candidates.length}개 (${anyUnverified ? "나이스 미등록 날은 기본 시간표 기준" : "실제 시간표 기준"})`
+      : "") + (notes.length ? ` ${notes.join(" · ")}` : "");
+    if (!targets.length) {
+      list.innerHTML = pending.length || failed.length ? "" :
+        `<div style="color:var(--color-text-muted)">위에서 후보를 찾을 주를 골라 주세요.</div>`;
       return;
     }
-    const mySlot = `${dayName(ymd, weekYmds)} ${per}교시`;
+    if (!res.candidates.length) {
+      list.innerHTML = pending.length ? "" :
+        `<div style="color:var(--color-text-muted)">고른 주에는 교체 가능한 수업이 없습니다. 다른 주도 체크해 보세요.</div>`;
+      return;
+    }
+    res.candidates.sort((a, b) => a.offset - b.offset);
+    const mySlot = `${mmdd(ymd)}(${dayName(ymd, weekYmds)}) ${per}교시`;
     list.innerHTML = res.candidates.map((c, i) => {
-      const theirSlot = `${dayName(c.ymd, weekYmds)} ${c.per}교시`;
+      const theirSlot = `${mmdd(c.ymd)}(${dowName(c.ymd)}) ${c.per}교시`;
+      const weekTag = offsets.length > 1 ? `<span class="week-tag">${WEEK_LABELS[c.offset]}</span>` : "";
       const heavy = c.runAfter >= 4 && c.runAfter > c.runBefore;
       const runText = c.runAfter > c.runBefore ? ` · 상대 ${c.runAfter}시간 연강` : "";
       const unverified = c.unverified ? `<div class="unverified">나이스 미등록 — 기본 시간표 기준이라 실제와 다를 수 있음</div>` : "";
       return `<div class="cand" data-i="${i}">
-        <div><span class="who">${esc(c.teacher)}</span> · <span class="when">${mmdd(c.ymd)}(${dayName(c.ymd, weekYmds)}) ${c.per}교시</span> · ${esc(c.cls)} ${esc(c.subj)}</div>
+        <div>${weekTag}<span class="who">${esc(c.teacher)}</span> · <span class="when">${theirSlot}</span> · ${esc(c.cls)} ${esc(c.subj)}</div>
         <div class="detail">나는 ${theirSlot}로, ${esc(c.teacher)} 선생님은 ${mySlot}로<span${heavy ? ' style="color:#b91c1c;font-weight:700"' : ""}>${runText}</span></div>
         ${unverified}
       </div>`;
