@@ -171,6 +171,21 @@ export function isBusy(week, name, ymd, per) {
   return (week[name]?.[slotKey(ymd, per)] ?? []).some((c) => c.state !== "gone");
 }
 
+// 그날 최대 연속 수업 시간 수. add/remove로 교체 후 상태를 미리 계산한다.
+export function maxConsecutive(week, name, ymd, add = null, remove = null) {
+  let best = 0;
+  let run = 0;
+  for (let p = 1; p <= 7; p++) {
+    const per = String(p);
+    let busy = isBusy(week, name, ymd, per);
+    if (remove && remove.ymd === ymd && remove.per === per) busy = false;
+    if (add && add.ymd === ymd && add.per === per) busy = true;
+    run = busy ? run + 1 : 0;
+    best = Math.max(best, run);
+  }
+  return best;
+}
+
 // 실제로 그 칸에서 하는 수업 (사라진 것·판단 불가 제외)
 export function activeLesson(week, name, ymd, per) {
   return (week[name]?.[slotKey(ymd, per)] ?? [])
@@ -197,7 +212,12 @@ export function findSwapCandidates(base, week, dayStatus, me, ymd1, per1, todayY
       if (!theirs || theirs.cls !== mine.cls || isExcludedSubject(theirs.subj)) return;
       if (isBusy(week, t.name, ymd1, per1)) return;
       if (isBusy(week, me, ymd2, per2)) return;
-      candidates.push({ teacher: t.name, ymd: ymd2, per: per2, cls: theirs.cls, subj: theirs.subj });
+      // 상대가 교체로 그날 몇 시간 연강이 되는지 (상대 부담 확인용)
+      const add = { ymd: ymd1, per: per1 };
+      const remove = { ymd: ymd2, per: per2 };
+      const runAfter = maxConsecutive(week, t.name, ymd1, add, remove);
+      const runBefore = maxConsecutive(week, t.name, ymd1);
+      candidates.push({ teacher: t.name, ymd: ymd2, per: per2, cls: theirs.cls, subj: theirs.subj, runAfter, runBefore });
     });
   });
   candidates.sort((a, b) => (a.ymd + a.per).localeCompare(b.ymd + b.per) || a.teacher.localeCompare(b.teacher));

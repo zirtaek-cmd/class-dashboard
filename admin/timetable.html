@@ -116,17 +116,21 @@
   }
   section h2 { font-size: 1.08rem; font-weight: 700; margin-bottom: 14px; }
 
-  /* 왼쪽: 내 시간표 */
-  #my-table { width: 100%; border-collapse: separate; border-spacing: 4px; table-layout: fixed; }
-  #my-table th {
+  /* 왼쪽: 내 시간표 + 교체 상대 시간표 */
+  .left-col { display: flex; flex-direction: column; gap: 24px; min-width: 0; }
+  #partner-section h2 .sub { font-weight: 500; color: var(--color-text-muted); font-size: 0.85rem; }
+  #partner-run { font-size: 0.88rem; margin: -6px 0 10px; }
+  #partner-run.warn { color: #b91c1c; font-weight: 700; }
+  .tt-table { width: 100%; border-collapse: separate; border-spacing: 4px; table-layout: fixed; }
+  .tt-table th {
     font-size: 0.85rem;
     font-weight: 700;
     color: var(--color-text-muted);
     padding: 4px 2px 6px;
     vertical-align: bottom;
   }
-  #my-table th.period-col { width: 40px; }
-  #my-table th .date { display: block; font-weight: 500; font-size: 0.78rem; }
+  .tt-table th.period-col { width: 40px; }
+  .tt-table th .date { display: block; font-weight: 500; font-size: 0.78rem; }
   .day-badge {
     display: inline-block;
     margin-top: 4px;
@@ -139,13 +143,13 @@
   .day-badge.holiday { background: #e5e7eb; color: #374151; }
   .day-badge.nodata { background: #fef3c7; color: var(--color-warn); }
   .day-badge.today { background: var(--color-ink); color: #fff; }
-  #my-table td.period-no {
+  .tt-table td.period-no {
     text-align: center;
     font-weight: 700;
     color: var(--color-text-muted);
     font-size: 0.9rem;
   }
-  #my-table td.slot {
+  .tt-table td.slot {
     height: 66px;
     background: var(--color-bg);
     border-radius: 12px;
@@ -153,12 +157,14 @@
     vertical-align: top;
     border: 2px solid transparent;
   }
-  #my-table td.slot.none { background: transparent; }
-  #my-table td.slot.dim { opacity: 0.55; }
-  #my-table td.slot.clickable { cursor: pointer; }
-  #my-table td.slot.clickable:hover { border-color: var(--color-ink); }
-  #my-table td.slot.selected { background: var(--color-selected); border-color: var(--color-selected-line); }
-  #my-table td.slot.target { background: var(--color-target); border-color: var(--color-target-line); }
+  .tt-table td.slot.none { background: transparent; }
+  .tt-table td.slot.dim { opacity: 0.55; }
+  .tt-table td.slot.clickable { cursor: pointer; }
+  .tt-table td.slot.clickable:hover { border-color: var(--color-ink); }
+  .tt-table td.slot.selected { background: var(--color-selected); border-color: var(--color-selected-line); }
+  .tt-table td.slot.target { background: var(--color-target); border-color: var(--color-target-line); }
+  .tt-table td.slot.out { background: #fef2f2; border-color: #f87171; }
+  .out-hint { display: block; font-size: 0.72rem; font-weight: 700; color: #b91c1c; }
   .lesson { font-size: 0.88rem; line-height: 1.3; }
   .lesson + .lesson { margin-top: 4px; }
   .lesson .cls { font-weight: 700; margin-right: 4px; }
@@ -192,6 +198,7 @@
   }
 
   /* 오른쪽: 교체 후보 */
+  #swap-section { position: sticky; top: 16px; }
   #swap-empty { color: var(--color-text-muted); font-size: 0.95rem; line-height: 1.6; }
   #swap-selected {
     background: var(--color-selected);
@@ -254,9 +261,10 @@
   <div id="loading">불러오는 중…</div>
 
   <div class="tt-grid" id="tt-grid" hidden>
+    <div class="left-col">
     <section>
       <h2>내 시간표 <span style="font-weight:500;color:var(--color-text-muted);font-size:0.85rem">(나이스 반영)</span></h2>
-      <table id="my-table"></table>
+      <table class="tt-table" id="my-table"></table>
       <div class="legend">
         <span><i style="background:var(--color-moved)"></i>옮겨 온 수업</span>
         <span><i style="background:var(--color-bg);border:1px solid var(--color-border)"></i><s>사라진 수업</s></span>
@@ -265,7 +273,18 @@
       </div>
     </section>
 
-    <section>
+    <section id="partner-section" hidden>
+      <h2><span id="partner-name"></span> 선생님 시간표 <span class="sub">(교체 미리보기)</span></h2>
+      <div id="partner-run"></div>
+      <table class="tt-table" id="partner-table"></table>
+      <div class="legend">
+        <span><i style="background:#fef2f2;border:1px solid #f87171"></i>교체하면 빠지는 수업</span>
+        <span><i style="background:var(--color-target)"></i>교체하면 들어갈 시간</span>
+      </div>
+    </section>
+    </div>
+
+    <section id="swap-section">
       <h2>시간표 교체 후보</h2>
       <div id="swap-empty">왼쪽 시간표에서 바꾸고 싶은 수업을 누르세요.<br>같은 반을 가르치는 선생님 중 서로 빈 시간이 맞는 수업을 찾아 드립니다.</div>
       <div id="swap-result" hidden>
@@ -534,16 +553,11 @@
     return `<div class="lesson">${label}</div>`;
   }
 
-  function render() {
-    if (!view || !base) return;
+  // 한 교사의 주간 시간표 표. 내 표는 칸을 눌러 고를 수 있고,
+  // 상대 표는 교체하면 빠지는 칸(out)과 들어갈 칸(into)을 표시한다.
+  function tableHtml(name, { clickable = false, out = null, into = null } = {}) {
     const { weekYmds, dayStatus, week } = view;
-    const table = $("my-table");
-    if (!me) {
-      table.innerHTML = `<tr><td style="color:var(--color-text-muted);padding:20px">위에서 선생님 이름을 골라 주세요.</td></tr>`;
-      renderSwap();
-      return;
-    }
-
+    const same = (a, ymd, per) => a && a.ymd === ymd && a.per === per;
     let html = `<tr><th class="period-col"></th>`;
     weekYmds.forEach((ymd, i) => {
       const st = dayStatus[ymd];
@@ -564,18 +578,58 @@
           html += `<td class="slot none"></td>`;
           return;
         }
-        const cells = week[me]?.[`${ymd}|${per}`] ?? [];
+        const cells = week[name]?.[`${ymd}|${per}`] ?? [];
         const classes = ["slot"];
+        let hint = "";
         if (dayStatus[ymd].type === "holiday") classes.push("dim");
-        if (activeLesson(week, me, ymd, per)) classes.push("clickable");
-        if (selected && selected.ymd === ymd && selected.per === per) classes.push("selected");
-        html += `<td class="${classes.join(" ")}" data-ymd="${ymd}" data-per="${per}">` +
+        if (clickable && activeLesson(week, name, ymd, per)) classes.push("clickable");
+        if (clickable && same(selected, ymd, per)) classes.push("selected");
+        if (same(out, ymd, per)) {
+          classes.push("out");
+          hint = `<span class="out-hint">교체하면 빠짐</span>`;
+        }
+        if (same(into, ymd, per)) {
+          classes.push("target");
+          hint = `<span class="target-hint">교체하면 여기로 · ${esc(into.cls)} ${esc(into.subj)}</span>`;
+        }
+        html += `<td class="${classes.join(" ")}" data-ymd="${ymd}" data-per="${per}">` + hint +
           cells.map((c) => lessonHtml(c, weekYmds)).join("") + `</td>`;
       });
       html += `</tr>`;
     }
-    table.innerHTML = html;
+    return html;
+  }
+
+  function render() {
+    if (!view || !base) return;
+    if (!me) {
+      $("my-table").innerHTML = `<tr><td style="color:var(--color-text-muted);padding:20px">위에서 선생님 이름을 골라 주세요.</td></tr>`;
+    } else {
+      $("my-table").innerHTML = tableHtml(me, { clickable: true });
+    }
     renderSwap();
+  }
+
+  // 교체 후보를 누르면 내 시간표 밑에 그 선생님 시간표를 띄운다 (연강 부담 확인용)
+  function showPartner(c) {
+    const section = $("partner-section");
+    if (!c) {
+      section.hidden = true;
+      return;
+    }
+    const { weekYmds } = view;
+    const dayLabel = `${dayName(selected.ymd, weekYmds)}(${mmdd(selected.ymd)})`;
+    $("partner-name").textContent = c.teacher;
+    const run = $("partner-run");
+    run.textContent = c.runAfter > c.runBefore
+      ? `교체하면 ${dayLabel} 최대 ${c.runAfter}시간 연속 수업 (지금 ${c.runBefore}시간)`
+      : `교체해도 ${dayLabel} 연속 수업이 늘지 않습니다 (최대 ${c.runAfter}시간)`;
+    run.classList.toggle("warn", c.runAfter >= 4 && c.runAfter > c.runBefore);
+    $("partner-table").innerHTML = tableHtml(c.teacher, {
+      out: { ymd: c.ymd, per: c.per },
+      into: { ymd: selected.ymd, per: selected.per, cls: c.cls, subj: c.subj },
+    });
+    section.hidden = false;
   }
 
   $("my-table").addEventListener("click", (e) => {
@@ -601,6 +655,7 @@
   function renderSwap() {
     const empty = $("swap-empty");
     const result = $("swap-result");
+    showPartner(null);
     if (!selected || !me) {
       empty.hidden = false;
       result.hidden = true;
@@ -635,12 +690,14 @@
     const mySlot = `${dayName(ymd, weekYmds)} ${per}교시`;
     list.innerHTML = res.candidates.map((c, i) => {
       const theirSlot = `${dayName(c.ymd, weekYmds)} ${c.per}교시`;
+      const heavy = c.runAfter >= 4 && c.runAfter > c.runBefore;
+      const runText = c.runAfter > c.runBefore ? ` · 상대 ${c.runAfter}시간 연강` : "";
       return `<div class="cand" data-i="${i}">
         <div><span class="who">${esc(c.teacher)}</span> · <span class="when">${mmdd(c.ymd)}(${dayName(c.ymd, weekYmds)}) ${c.per}교시</span> · ${esc(c.cls)} ${esc(c.subj)}</div>
-        <div class="detail">나는 ${theirSlot}로, ${esc(c.teacher)} 선생님은 ${mySlot}로</div>
+        <div class="detail">나는 ${theirSlot}로, ${esc(c.teacher)} 선생님은 ${mySlot}로<span${heavy ? ' style="color:#b91c1c;font-weight:700"' : ""}>${runText}</span></div>
       </div>`;
     }).join("");
-    // 마우스를 올리면 잠깐, 누르면 고정해서 왼쪽에 들어갈 시간을 표시
+    // 마우스를 올리면 잠깐, 누르면 고정해서 왼쪽에 들어갈 시간 + 상대 시간표 표시
     let pinned = null;
     const showPinned = () => setTarget(pinned?.ymd, pinned?.per);
     list.querySelectorAll(".cand").forEach((el) => {
@@ -651,6 +708,7 @@
         pinned = pinned === c ? null : c;
         list.querySelectorAll(".cand").forEach((x) => x.classList.toggle("active", x === el && pinned === c));
         showPinned();
+        showPartner(pinned);
       });
     });
   }
