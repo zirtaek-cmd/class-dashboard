@@ -563,19 +563,17 @@
 
   function lessonHtml(c, weekYmds) {
     const label = `<span class="main"><span class="cls">${esc(c.cls)}</span>${esc(c.subj)}</span>`;
-    const at = (p) => `${mmdd(p.ymd)} ${dayName(p.ymd, weekYmds)} ${p.per}`;
     if (c.state === "gone") {
       const note = `나이스: ${c.neis || "없음"}`;
       return `<div class="lesson gone">${label}<span class="note">${esc(note)}</span></div>`;
     }
     if (c.state === "moved-in" || c.state === "added") {
-      let note = c.from ? `← ${at(c.from)}교시에서` : c.state === "added" ? "추가됨" : "옮겨 옴";
+      // 어디서 왔는지·누구 수업인지 추정은 로직이 단단해질 때까지 보여 주지 않는다
+      let note = "변경됨";
       let cls = c.state === "moved-in" ? "moved" : "added";
       if (c.ambiguous) {
         note = `${c.ambiguous.join("·")} 중 확인 필요`;
         cls += " unsure";
-      } else if (c.guess && !c.from) {
-        note = c.guess === "balance" ? "앞뒤 한 달 비교로 추정" : "강사 수업은 그대로로 보고 추정";
       }
       return `<div class="lesson ${cls}">${label}<span class="note">${esc(note)}</span></div>`;
     }
