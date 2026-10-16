@@ -77,8 +77,9 @@ function makeActualLookup(neisRows, makeup) {
 //   cell.state: kept | gone | moved-in | added | base (시험·휴일·나이스 미등록일)
 //   cell.cls, cell.subj(기준 시간표 과목명), cell.neis(gone일 때 나이스 과목),
 //   cell.from / cell.to (짝지어진 원래/옮겨 간 칸), cell.ambiguous(후보 교사 목록)
-// 겸임·강사(restricted) 수업은 고정이라 변동이 없다: 항상 유지로 두고 교체 주인 후보에서도 뺀다.
-export function computeWeek(base, weekYmds, neisRows, makeup, dayStatus) {
+//   cell.guess: 판단 근거가 추정일 때 "balance"(앞뒤 한 달 비교) | "restricted"(겸임·강사는 그대로로 봄)
+// resolve(cls, subj, ymd, per, names): 누구 수업인지 모를 때 한 명을 고르는 함수(없으면 판단 불가로 둔다)
+export function computeWeek(base, weekYmds, neisRows, makeup, dayStatus, resolve = null) {
   const actual = makeActualLookup(neisRows, makeup);
   const result = {};
   const put = (name, ymd, per, cell) => {
@@ -105,7 +106,7 @@ export function computeWeek(base, weekYmds, neisRows, makeup, dayStatus) {
         return;
       }
       const a = actual(l.cls, ymd, per);
-      if (t.restricted || a === neisName(l.subj)) {
+      if (a === neisName(l.subj)) {
         put(t.name, ymd, per, { state: "kept", cls: l.cls, subj: l.subj });
         return;
       }
@@ -127,7 +128,7 @@ export function computeWeek(base, weekYmds, neisRows, makeup, dayStatus) {
         const a = actual(cls, ymd, per);
         if (!a) continue;
         const owner = ownerByClassSlot.get(`${cls}|${DAYS[di]}${per}`);
-        if (owner && (owner.teacher.restricted || neisName(owner.subj) === a)) continue;
+        if (owner && neisName(owner.subj) === a) continue;
         const k = `${cls}|${a}`;
         (appeared.get(k) ?? appeared.set(k, []).get(k)).push({ ymd, per });
       }
@@ -138,19 +139,38 @@ export function computeWeek(base, weekYmds, neisRows, makeup, dayStatus) {
     const [cls, subj] = k.split("|");
     // 이 반에서 이 나이스 과목을 가르치는 교사(기준 시간표)
     const teachers = base.teachers.filter((t) =>
-      !t.restricted && Object.values(t.lessons).some((l) => l.cls === cls && neisName(l.subj) === subj)
+      Object.values(t.lessons).some((l) => l.cls === cls && neisName(l.subj) === subj)
     );
     if (teachers.length === 0) return; // 행사·자습 등 주인 없는 칸
     const goneList = gone.get(k) ?? [];
     const goneTeachers = [...new Set(goneList.map((g) => g.teacher))];
     // 주인 = 그 주에 이 반에서 같은 과목 수업이 사라진 교사. 없으면 보강(추가됨).
-    // 후보가 둘 이상이면(기술/가정, 분반 A/B 등) 판단 불가로 표시한다.
+    // 후보가 둘 이상이면(기술/가정, 분반 A/B 등) 아래 순서로 좁히고, 그래도 남으면 판단 불가로 표시한다.
+    //   1) 한 교사가 같은 시간에 두 반에 들어갈 수 없으므로 그 시간에 이미 수업이 있는 교사는 뺀다
+    //   2) 빠진 수업이 아직 짝을 못 찾은 교사 → 빠진 수업이 있는 교사 → 나머지 순
+    //   3) resolve(앞뒤 한 달 비교)
+    //   4) 겸임·강사 수업은 거의 바뀌지 않으므로 그대로 있다고 보고 일반 교사로 본다
     slots.forEach(({ ymd, per }) => {
-      // 한 교사가 같은 시간에 두 반에 들어갈 수 없으므로 그 시간에 이미 수업이 있는 교사는 뺀다
-      const free = (t) => !activeLesson(result, t.name, ymd, per);
-      const freeGone = goneTeachers.filter(free);
-      const freeAll = teachers.filter(free);
-      const owners = freeGone.length ? freeGone : freeAll.length ? freeAll : goneTeachers.length ? goneTeachers : teachers;
+      const free = teachers.filter((t) => !activeLesson(result, t.name, ymd, per));
+      const pool = free.length ? free : teachers;
+      const unmatched = pool.filter((t) => goneList.some((g) => g.teacher === t && !g.cell.to));
+      const withGone = pool.filter((t) => goneTeachers.includes(t));
+      let owners = unmatched.length ? unmatched : withGone.length ? withGone : pool;
+      let guess = null;
+      if (owners.length > 1 && resolve) {
+        const pick = resolve(cls, subj, ymd, per, owners.map((t) => t.name));
+        if (pick) {
+          owners = owners.filter((t) => t.name === pick);
+          guess = "balance";
+        }
+      }
+      if (owners.length > 1) {
+        const regular = owners.filter((t) => !t.restricted);
+        if (regular.length && regular.length < owners.length) {
+          owners = regular;
+          if (owners.length === 1) guess = "restricted";
+        }
+      }
       const ambiguous = owners.length > 1 ? owners.map((t) => t.name) : null;
       owners.forEach((t) => {
         const lesson = Object.values(t.lessons).find((l) => l.cls === cls && neisName(l.subj) === subj);
@@ -159,6 +179,7 @@ export function computeWeek(base, weekYmds, neisRows, makeup, dayStatus) {
           state: match || (ambiguous && goneTeachers.some((g) => owners.includes(g))) ? "moved-in" : "added",
           cls, subj: lesson.subj, ymd, per, ambiguous,
         };
+        if (guess) cell.guess = guess;
         if (match) {
           match.cell.to = { ymd, per };
           cell.from = { ymd: match.cell.ymd, per: match.cell.per };
@@ -169,6 +190,44 @@ export function computeWeek(base, weekYmds, neisRows, makeup, dayStatus) {
   });
 
   return result;
+}
+
+export function hasAmbiguous(week) {
+  return Object.values(week).some((slots) => Object.values(slots).some((cells) => cells.some((c) => c.ambiguous)));
+}
+
+function shiftMonths(ymd, n) {
+  const d = new Date(Number(ymd.slice(0, 4)), Number(ymd.slice(4, 6)) - 1 + n, Number(ymd.slice(6, 8)));
+  return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
+}
+
+// 앞뒤 한 달 비교로 주인을 고르는 resolve 함수를 만든다.
+// weeks: 나이스가 올라온 주들의 computeWeek 결과(resolve 없이 계산한 것). 나이스 없는 날은 칸이 base라 세지 않는다.
+// 교사별 빈 수업 = 빠졌는데 그 주에 안 채워진 시간 − 출처 없이 더 들어간 시간 (같은 반·같은 나이스 과목)
+// 빈 수업이 가장 많은 교사가 한 명이고 1시간 이상이면 그 교사로 본다.
+export function makeBalanceResolver(weeks) {
+  return (cls, subj, ymd, per, names) => {
+    const from = shiftMonths(ymd, -1);
+    const to = shiftMonths(ymd, 1);
+    const score = names.map((name) => {
+      let n = 0;
+      weeks.forEach((week) => {
+        Object.entries(week[name] ?? {}).forEach(([key, cells]) => {
+          const day = key.split("|")[0];
+          if (day < from || day > to) return;
+          cells.forEach((c) => {
+            if (c.cls !== cls || neisName(c.subj) !== subj) return;
+            if (c.state === "gone" && !c.to) n++;
+            if (c.state === "added" && !c.ambiguous) n--;
+          });
+        });
+      });
+      return { name, n };
+    });
+    const best = Math.max(...score.map((s) => s.n));
+    const top = score.filter((s) => s.n === best);
+    return best > 0 && top.length === 1 ? top[0].name : null;
+  };
 }
 
 // 그 칸에 수업이 있는지 (사라진 수업은 빈 시간으로 본다)
