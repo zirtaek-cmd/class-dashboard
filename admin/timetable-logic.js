@@ -77,6 +77,7 @@ function makeActualLookup(neisRows, makeup) {
 //   cell.state: kept | gone | moved-in | added | base (시험·휴일·나이스 미등록일)
 //   cell.cls, cell.subj(기준 시간표 과목명), cell.neis(gone일 때 나이스 과목),
 //   cell.from / cell.to (짝지어진 원래/옮겨 간 칸), cell.ambiguous(후보 교사 목록)
+// 겸임·강사(restricted) 수업은 고정이라 변동이 없다: 항상 유지로 두고 교체 주인 후보에서도 뺀다.
 export function computeWeek(base, weekYmds, neisRows, makeup, dayStatus) {
   const actual = makeActualLookup(neisRows, makeup);
   const result = {};
@@ -104,7 +105,7 @@ export function computeWeek(base, weekYmds, neisRows, makeup, dayStatus) {
         return;
       }
       const a = actual(l.cls, ymd, per);
-      if (a === neisName(l.subj)) {
+      if (t.restricted || a === neisName(l.subj)) {
         put(t.name, ymd, per, { state: "kept", cls: l.cls, subj: l.subj });
         return;
       }
@@ -126,7 +127,7 @@ export function computeWeek(base, weekYmds, neisRows, makeup, dayStatus) {
         const a = actual(cls, ymd, per);
         if (!a) continue;
         const owner = ownerByClassSlot.get(`${cls}|${DAYS[di]}${per}`);
-        if (owner && neisName(owner.subj) === a) continue;
+        if (owner && (owner.teacher.restricted || neisName(owner.subj) === a)) continue;
         const k = `${cls}|${a}`;
         (appeared.get(k) ?? appeared.set(k, []).get(k)).push({ ymd, per });
       }
@@ -137,21 +138,25 @@ export function computeWeek(base, weekYmds, neisRows, makeup, dayStatus) {
     const [cls, subj] = k.split("|");
     // 이 반에서 이 나이스 과목을 가르치는 교사(기준 시간표)
     const teachers = base.teachers.filter((t) =>
-      Object.values(t.lessons).some((l) => l.cls === cls && neisName(l.subj) === subj)
+      !t.restricted && Object.values(t.lessons).some((l) => l.cls === cls && neisName(l.subj) === subj)
     );
     if (teachers.length === 0) return; // 행사·자습 등 주인 없는 칸
     const goneList = gone.get(k) ?? [];
     const goneTeachers = [...new Set(goneList.map((g) => g.teacher))];
     // 주인 = 그 주에 이 반에서 같은 과목 수업이 사라진 교사. 없으면 보강(추가됨).
     // 후보가 둘 이상이면(기술/가정, 분반 A/B 등) 판단 불가로 표시한다.
-    const owners = goneTeachers.length ? goneTeachers : teachers;
-    const ambiguous = owners.length > 1 ? owners.map((t) => t.name) : null;
     slots.forEach(({ ymd, per }) => {
+      // 한 교사가 같은 시간에 두 반에 들어갈 수 없으므로 그 시간에 이미 수업이 있는 교사는 뺀다
+      const free = (t) => !activeLesson(result, t.name, ymd, per);
+      const freeGone = goneTeachers.filter(free);
+      const freeAll = teachers.filter(free);
+      const owners = freeGone.length ? freeGone : freeAll.length ? freeAll : goneTeachers.length ? goneTeachers : teachers;
+      const ambiguous = owners.length > 1 ? owners.map((t) => t.name) : null;
       owners.forEach((t) => {
         const lesson = Object.values(t.lessons).find((l) => l.cls === cls && neisName(l.subj) === subj);
         const match = ambiguous ? null : goneList.find((g) => g.teacher === t && !g.cell.to);
         const cell = {
-          state: match || (ambiguous && goneTeachers.length) ? "moved-in" : "added",
+          state: match || (ambiguous && goneTeachers.some((g) => owners.includes(g))) ? "moved-in" : "added",
           cls, subj: lesson.subj, ymd, per, ambiguous,
         };
         if (match) {
