@@ -565,7 +565,7 @@
     const label = `<span class="main"><span class="cls">${esc(c.cls)}</span>${esc(c.subj)}</span>`;
     const at = (p) => `${mmdd(p.ymd)} ${dayName(p.ymd, weekYmds)} ${p.per}`;
     if (c.state === "gone") {
-      const note = c.to ? `→ ${at(c.to)}교시로` : `나이스: ${c.neis || "없음"}`;
+      const note = `나이스: ${c.neis || "없음"}`;
       return `<div class="lesson gone">${label}<span class="note">${esc(note)}</span></div>`;
     }
     if (c.state === "moved-in" || c.state === "added") {
