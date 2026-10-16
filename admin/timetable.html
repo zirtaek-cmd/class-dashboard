@@ -548,7 +548,6 @@
 
   function renderStatus() {
     const parts = [];
-    if (base) parts.push(`기본 시간표: ${esc(base.source || "")} (${base.teachers.length}명)`);
     if (view) {
       parts.push(`나이스 ${mmdd(view.fetchedOn)} 조회`);
       if (view.stale) parts.push(`<span class="warn">오늘 나이스 조회 실패 — 지난 자료로 표시 중</span>`);
