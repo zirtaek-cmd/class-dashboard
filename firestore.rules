@@ -12,9 +12,13 @@ service cloud.firestore {
         && request.auth.token.firebase.sign_in_provider == 'anonymous';
     }
 
-    match /notices/{targetId} {
+    // 공지사항: 반/학년/전교 각 대상마다 항목(items) 목록으로 관리.
+    // 읽기는 누구나, 생성/수정/삭제는 교사만 가능.
+    match /notices/{targetId}/items/{itemId} {
       allow read: if true;
-      allow write: if isTeacher();
+      allow create: if isTeacher();
+      allow update: if isTeacher();
+      allow delete: if isTeacher();
     }
 
     match /calls/{classId}/queue/{callId} {
@@ -29,6 +33,11 @@ service cloud.firestore {
       allow create: if isTeacher();
       allow delete: if isTeacher();
       allow update: if false;
+    }
+
+    // 교사별 기본 시간표(실명 포함): 교사만 읽고 쓸 수 있다.
+    match /timetable/{docId} {
+      allow read, write: if isTeacher();
     }
   }
 }

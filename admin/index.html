@@ -77,7 +77,7 @@
     color: var(--color-text-muted);
     font-size: 0.9rem;
   }
-  #open-display-btn {
+  #open-display-btn, #open-timetable-btn {
     margin-left: 8px;
     padding: 8px 16px;
     border: 1px solid var(--color-ink);
@@ -90,11 +90,11 @@
     align-items: center;
     gap: 6px;
   }
-  #open-display-btn:hover {
+  #open-display-btn:hover, #open-timetable-btn:hover {
     background: var(--color-ink);
     color: #fff;
   }
-  #open-display-btn svg { width: 15px; height: 15px; }
+  #open-display-btn svg, #open-timetable-btn svg { width: 15px; height: 15px; }
 
   .admin-grid {
     display: flex;
@@ -453,6 +453,10 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="M15 3h6v6"/><path d="M10 14 21 3"/></svg>
         학생용 화면 열기
       </button>
+      <button id="open-timetable-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></svg>
+        시간표 확인
+      </button>
     </div>
   </header>
 
@@ -687,6 +691,13 @@
   document.getElementById("open-display-btn").addEventListener("click", () => {
     const classId = representativeClassId(selectedTargetId || "1-1");
     window.open(`../display/index.html?classId=${classId}`, "_blank");
+  });
+
+  // 시간표 확인은 별도 창. 이미 열려 있으면 그 창을 앞으로 가져온다.
+  // (일반 window.open이라 sessionStorage의 로그인 세션이 새 창으로 이어진다)
+  document.getElementById("open-timetable-btn").addEventListener("click", () => {
+    const win = window.open("timetable.html", "timetable-window", "width=1480,height=920");
+    win?.focus();
   });
 
   function updatePreviewFrame(targetId) {
