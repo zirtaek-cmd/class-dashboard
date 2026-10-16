@@ -221,6 +221,7 @@
   .cand .who { font-weight: 700; }
   .cand .when { color: var(--color-text); }
   .cand .detail { font-size: 0.8rem; color: var(--color-text-muted); margin-top: 2px; }
+  .cand .unverified { font-size: 0.76rem; color: var(--color-warn); font-weight: 600; margin-top: 2px; }
   .swap-note {
     margin-top: 14px;
     font-size: 0.8rem;
@@ -708,8 +709,9 @@
       return;
     }
     reason.hidden = true;
+    const anyUnverified = res.candidates.some((c) => c.unverified);
     $("swap-count").textContent = res.candidates.length
-      ? `교체 가능한 수업 ${res.candidates.length}개 (이 주 실제 시간표 기준)`
+      ? `교체 가능한 수업 ${res.candidates.length}개 (${anyUnverified ? "나이스 미등록 날은 기본 시간표 기준" : "이 주 실제 시간표 기준"})`
       : "";
     if (!res.candidates.length) {
       list.innerHTML = `<div style="color:var(--color-text-muted)">이 주에는 교체 가능한 수업이 없습니다. 다른 주를 확인해 보세요.</div>`;
@@ -720,9 +722,11 @@
       const theirSlot = `${dayName(c.ymd, weekYmds)} ${c.per}교시`;
       const heavy = c.runAfter >= 4 && c.runAfter > c.runBefore;
       const runText = c.runAfter > c.runBefore ? ` · 상대 ${c.runAfter}시간 연강` : "";
+      const unverified = c.unverified ? `<div class="unverified">나이스 미등록 — 기본 시간표 기준이라 실제와 다를 수 있음</div>` : "";
       return `<div class="cand" data-i="${i}">
         <div><span class="who">${esc(c.teacher)}</span> · <span class="when">${mmdd(c.ymd)}(${dayName(c.ymd, weekYmds)}) ${c.per}교시</span> · ${esc(c.cls)} ${esc(c.subj)}</div>
         <div class="detail">나는 ${theirSlot}로, ${esc(c.teacher)} 선생님은 ${mySlot}로<span${heavy ? ' style="color:#b91c1c;font-weight:700"' : ""}>${runText}</span></div>
+        ${unverified}
       </div>`;
     }).join("");
     // 마우스를 올리면 잠깐, 누르면 고정해서 왼쪽에 들어갈 시간 + 상대 시간표 표시
