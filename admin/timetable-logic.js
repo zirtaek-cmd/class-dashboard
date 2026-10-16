@@ -75,13 +75,13 @@ function makeActualLookup(neisRows, makeup) {
 // 교사별 실제 시간표 계산.
 // 반환: { [teacherName]: { [ymd|per]: cell[] } }
 //   cell.state: kept | gone | moved-in | added | base (시험·휴일)
-//   cell.unverified: 나이스 미등록일이라 기본 시간표대로 둔 수업(교체 후보 찾기에는 쓴다)
+//   cell.unverified: 나이스 미등록일이라 보정 > 기본 시간표로 판정한 수업(교체 후보 찾기에는 쓴다)
 //   cell.cls, cell.subj(기준 시간표 과목명), cell.neis(gone일 때 나이스 과목),
 //   cell.from / cell.to (짝지어진 원래/옮겨 간 칸), cell.ambiguous(후보 교사 목록)
 //   cell.guess: 판단 근거가 추정일 때 "balance"(앞뒤 한 달 비교) | "restricted"(겸임·강사는 그대로로 봄)
 // resolve(cls, subj, ymd, per, names): 누구 수업인지 모를 때 한 명을 고르는 함수(없으면 판단 불가로 둔다)
 export function computeWeek(base, weekYmds, neisRows, makeup, dayStatus, resolve = null) {
-  const actual = makeActualLookup(neisRows, makeup);
+  const lookup = makeActualLookup(neisRows, makeup);
   const result = {};
   const put = (name, ymd, per, cell) => {
     const key = slotKey(ymd, per);
@@ -96,26 +96,32 @@ export function computeWeek(base, weekYmds, neisRows, makeup, dayStatus, resolve
     });
   });
 
+  // 나이스 미등록일은 보정이 있으면 보정, 없으면 기본 시간표 과목으로 본다
+  const open = (ymd) => dayStatus[ymd].type === "normal" || dayStatus[ymd].type === "nodata";
+  const actual = (cls, ymd, per) => {
+    const a = lookup(cls, ymd, per);
+    if (a !== undefined || dayStatus[ymd].type !== "nodata") return a;
+    const owner = ownerByClassSlot.get(`${cls}|${DAYS[weekYmds.indexOf(ymd)]}${per}`);
+    return owner ? neisName(owner.subj) : undefined;
+  };
+
   // 1) 기준 수업마다 유지/사라짐 판정
   const gone = new Map(); // `${cls}|${neisSubj}` → [{teacher, cell}]
   base.teachers.forEach((t) => {
     Object.entries(t.lessons).forEach(([slot, l]) => {
       const ymd = weekYmds[DAYS.indexOf(slot[0])];
       const per = slot.slice(1);
-      if (dayStatus[ymd].type === "nodata") {
-        put(t.name, ymd, per, { state: "kept", cls: l.cls, subj: l.subj, unverified: true });
-        return;
-      }
-      if (dayStatus[ymd].type !== "normal") {
+      if (!open(ymd)) {
         put(t.name, ymd, per, { state: "base", cls: l.cls, subj: l.subj });
         return;
       }
       const a = actual(l.cls, ymd, per);
+      const unverified = dayStatus[ymd].type === "nodata" ? { unverified: true } : {};
       if (a === neisName(l.subj)) {
-        put(t.name, ymd, per, { state: "kept", cls: l.cls, subj: l.subj });
+        put(t.name, ymd, per, { state: "kept", cls: l.cls, subj: l.subj, ...unverified });
         return;
       }
-      const cell = { state: "gone", cls: l.cls, subj: l.subj, neis: a ?? "", ymd, per };
+      const cell = { state: "gone", cls: l.cls, subj: l.subj, neis: a ?? "", ymd, per, ...unverified };
       put(t.name, ymd, per, cell);
       const k = `${l.cls}|${neisName(l.subj)}`;
       (gone.get(k) ?? gone.set(k, []).get(k)).push({ teacher: t, cell });
@@ -127,7 +133,7 @@ export function computeWeek(base, weekYmds, neisRows, makeup, dayStatus, resolve
   const appeared = new Map(); // `${cls}|${neisSubj}` → [{ymd, per}]
   classes.forEach((cls) => {
     weekYmds.forEach((ymd, di) => {
-      if (dayStatus[ymd].type !== "normal") return;
+      if (!open(ymd)) return;
       for (let p = 1; p <= 7; p++) {
         const per = String(p);
         const a = actual(cls, ymd, per);
