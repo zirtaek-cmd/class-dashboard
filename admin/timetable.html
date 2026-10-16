@@ -562,7 +562,7 @@
 
   function lessonHtml(c, weekYmds) {
     const label = `<span class="main"><span class="cls">${esc(c.cls)}</span>${esc(c.subj)}</span>`;
-    const at = (p) => `${dayName(p.ymd, weekYmds)}${p.per}`;
+    const at = (p) => `${mmdd(p.ymd)} ${dayName(p.ymd, weekYmds)} ${p.per}`;
     if (c.state === "gone") {
       const note = c.to ? `→ ${at(c.to)}교시로` : `나이스: ${c.neis || "없음"}`;
       return `<div class="lesson gone">${label}<span class="note">${esc(note)}</span></div>`;
@@ -576,8 +576,7 @@
       } else if (c.guess && !c.from) {
         note = c.guess === "balance" ? "앞뒤 한 달 비교로 추정" : "강사 수업은 그대로로 보고 추정";
       }
-      const date = c.from && !c.ambiguous ? `<span class="note">${mmdd(c.from.ymd)}</span>` : "";
-      return `<div class="lesson ${cls}">${label}<span class="note">${esc(note)}</span>${date}</div>`;
+      return `<div class="lesson ${cls}">${label}<span class="note">${esc(note)}</span></div>`;
     }
     return `<div class="lesson">${label}</div>`;
   }
