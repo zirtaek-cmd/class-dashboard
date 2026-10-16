@@ -364,7 +364,7 @@
   }
   const mmdd = (ymd) => `${Number(ymd.slice(4, 6))}/${Number(ymd.slice(6, 8))}`;
   const dayName = (ymd, weekYmds) => DAYS[weekYmds.indexOf(ymd)];
-  const todayYmd = ymdOf(new Date());
+  const todayYmd = () => ymdOf(new Date()); // 창을 밤새 열어 둬도 날짜가 바뀌도록 매번 계산
 
   let base = null;
   let makeup = {};
@@ -483,7 +483,7 @@
       `https://open.neis.go.kr/hub/SchoolSchedule?${q}&pSize=100&AA_FROM_YMD=${weekYmds[0]}&AA_TO_YMD=${weekYmds[4]}`
     );
     return {
-      fetchedOn: todayYmd,
+      fetchedOn: todayYmd(),
       timetable: timetable.map(pickTimetable),
       schedule: (sched?.SchoolSchedule?.[1]?.row ?? []).map(pickSchedule),
     };
@@ -493,7 +493,7 @@
     const key = CACHE_PREFIX + weekYmds[0];
     let cached = null;
     try { cached = JSON.parse(localStorage.getItem(key) || "null"); } catch (err) {}
-    if (cached && cached.fetchedOn === todayYmd) return { ...cached, stale: false };
+    if (cached && cached.fetchedOn === todayYmd()) return { ...cached, stale: false };
     try {
       const fresh = await fetchNeisWeek(weekYmds);
       try { localStorage.setItem(key, JSON.stringify(fresh)); } catch (err) {}
@@ -609,7 +609,7 @@
       if (st.type === "exam") badge = `<span class="day-badge exam">시험 · 원래 시간표</span>`;
       else if (st.type === "holiday") badge = `<span class="day-badge holiday">${esc(st.label)}</span>`;
       else if (st.type === "nodata") badge = `<span class="day-badge nodata">나이스 미등록</span>`;
-      else if (ymd === todayYmd) badge = `<span class="day-badge today">오늘</span>`;
+      else if (ymd === todayYmd()) badge = `<span class="day-badge today">오늘</span>`;
       html += `<th>${DAYS[i]}<span class="date">${mmdd(ymd)}</span>${badge}</th>`;
     });
     html += `</tr>`;
@@ -769,7 +769,7 @@
       else if (w === "error") failed.push(WEEK_LABELS[o]);
       else targets.push({ week: w.week, dayStatus: w.dayStatus, offset: o });
     });
-    const res = findSwapCandidates(base, week, dayStatus, me, ymd, per, todayYmd, targets);
+    const res = findSwapCandidates(base, week, dayStatus, me, ymd, per, todayYmd(), targets);
     const reason = $("swap-reason");
     const list = $("swap-list");
     if (res.reason) {
