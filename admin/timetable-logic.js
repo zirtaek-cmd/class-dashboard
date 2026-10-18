@@ -77,7 +77,7 @@ function makeActualLookup(neisRows, makeup) {
 //   cell.state: kept | gone | moved-in | added | base (시험·휴일)
 //   cell.unverified: 나이스 미등록일이라 보정 > 기본 시간표로 판정한 수업(교체 후보 찾기에는 쓴다)
 //   cell.cls, cell.subj(기준 시간표 과목명), cell.neis(gone일 때 나이스 과목),
-//   cell.from / cell.to (짝지어진 원래/옮겨 간 칸), cell.ambiguous(후보 교사 목록)
+//   cell.from / cell.to (짝지어진 원래/옮겨 간 칸), cell.sure(1대1이라 출처가 확실함), cell.ambiguous(후보 교사 목록)
 //   cell.guess: 판단 근거가 추정일 때 "balance"(앞뒤 한 달 비교) | "restricted"(겸임·강사는 그대로로 봄)
 // resolve(cls, subj, ymd, per, names): 누구 수업인지 모를 때 한 명을 고르는 함수(없으면 판단 불가로 둔다)
 export function computeWeek(base, weekYmds, neisRows, makeup, dayStatus, resolve = null) {
@@ -197,6 +197,30 @@ export function computeWeek(base, weekYmds, neisRows, makeup, dayStatus, resolve
         }
         put(t.name, ymd, per, cell);
       });
+    });
+  });
+
+  // 같은 반·같은 과목에서 그 주에 빠진 수업 1칸과 옮겨 온 수업 1칸뿐이면 출처가 확실하다.
+  // 단 나이스에서 다른 과목이 한 이름으로 합쳐지는 반(기술·가정)은 주인부터 추정이라 빼고,
+  // 여러 칸일 때는 짝이 임의라 보여 주지 않는다 (2학기 실제 시간표로 채점해 정한 규칙)
+  const courses = new Map(); // `${cls}|${neisSubj}` → 기준 시간표 과목(분반 A/B는 같은 과목)
+  base.teachers.forEach((t) => {
+    Object.values(t.lessons).forEach((l) => {
+      const k = `${l.cls}|${neisName(l.subj)}`;
+      (courses.get(k) ?? courses.set(k, new Set()).get(k)).add(l.subj.replace(/[AB]$/, ""));
+    });
+  });
+  Object.values(result).forEach((slots) => {
+    const groups = new Map();
+    Object.values(slots).flat().forEach((c) => {
+      if (c.state !== "gone" && !(c.state === "moved-in" && !c.ambiguous)) return;
+      const k = `${c.cls}|${neisName(c.subj)}`;
+      (groups.get(k) ?? groups.set(k, []).get(k)).push(c);
+    });
+    groups.forEach((cells) => {
+      const moved = cells.filter((c) => c.state === "moved-in");
+      if (moved.length !== 1 || cells.length !== 2 || !moved[0].from) return;
+      if (courses.get(`${moved[0].cls}|${neisName(moved[0].subj)}`).size === 1) moved[0].sure = true;
     });
   });
 
