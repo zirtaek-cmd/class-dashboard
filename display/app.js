@@ -586,17 +586,42 @@ function subscribeBoard(classId) {
   });
 }
 
-function scheduleMidnightReload() {
-  const now = new Date();
-  const target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 10, 0, 0);
-  if (target <= now) target.setDate(target.getDate() + 1);
-  setTimeout(() => location.reload(), target - now);
+// 칠판은 하루 종일 켜 두므로 5분마다 확인해서 날짜가 바뀌었거나 새로 배포된 파일이 있으면 새로고침한다.
+// (긴 setTimeout은 컴퓨터가 절전에 들어가면 밀려서 자정 새로고침이 안 될 수 있음)
+// 처음 비교값은 브라우저 캐시(지금 실행 중인 파일과 같은 것)에서, 확인은 서버에서 받는다.
+// cache: "reload"는 받은 새 파일로 캐시도 갱신해서 새로고침 때 옛 app.js가 다시 쓰이지 않게 한다.
+const UPDATE_CHECK_MS = 5 * 60 * 1000;
+const WATCHED_FILES = ["index.html", "app.js", "../data/regular-timetable.json", "../data/makeup-timetable.json"];
+
+async function readWatchedFiles(cache) {
+  return Promise.all(WATCHED_FILES.map((f) => fetch(f, { cache }).then((res) => (res.ok ? res.text() : null))));
+}
+
+function scheduleAutoReload() {
+  const loadedDay = todayIso();
+  const loadedFiles = readWatchedFiles("default").catch(() => null);
+  setInterval(async () => {
+    if (!document.getElementById("board-modal-overlay").hidden) return;
+    if (todayIso() !== loadedDay) {
+      location.reload();
+      return;
+    }
+    try {
+      const before = await loadedFiles;
+      const now = await readWatchedFiles("reload");
+      if (before && now.some((text, i) => text !== null && before[i] !== null && text !== before[i])) {
+        location.reload();
+      }
+    } catch (err) {
+      // 인터넷이 잠깐 끊기면 다음 확인 때 다시 본다
+    }
+  }, UPDATE_CHECK_MS);
 }
 
 function init() {
   initClassSelect();
   initBoardModal();
-  scheduleMidnightReload();
+  scheduleAutoReload();
   const classId = getUrlClassId() || getStoredClassId();
   if (classId) {
     enterDashboard(classId);
