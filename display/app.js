@@ -197,6 +197,65 @@ async function fetchSchedule() {
   }
 }
 
+// 나이스는 기술과 가정을 "기술·가정" 한 이름으로 주므로, 정규 시간표(기술/가정 구분)로 어느 쪽인지 추정한다.
+// ① 정규 시간표의 기술·가정 칸이면 그 과목 ② 옮겨 온 칸이면 이번 주에 빠진 기술·가정 칸의 과목
+// ③ 그래도 모르면 그 반 정규 시간표에 더 많은 과목. (8/18~10/19 실제 시간표 채점 225칸 중 222칸 맞음,
+// 틀린 3칸은 기술·가정 선생님끼리 바꾼 날이라 나이스로는 알 수 없음)
+const TECH_HOME = "기술·가정";
+const TECH_HOME_KINDS = ["기술", "가정"];
+let weekTimetableCache = { key: null, rows: null };
+
+async function loadWeekTimetable(classId) {
+  const { from, to } = weekRangeYmd();
+  const key = `${classId}|${from}`;
+  if (weekTimetableCache.key === key) return weekTimetableCache.rows;
+  const [grade, classNm] = classId.split("-");
+  const url = `https://open.neis.go.kr/hub/misTimetable?KEY=${NEIS_KEY}&Type=json&pSize=100&ATPT_OFCDC_SC_CODE=${ATPT_OFCDC_SC_CODE}&SD_SCHUL_CODE=${SD_SCHUL_CODE}&GRADE=${grade}&CLASS_NM=${classNm}&TI_FROM_YMD=${from}&TI_TO_YMD=${to}`;
+  const res = await fetch(url);
+  const data = await res.json();
+  const rows = data?.misTimetable?.[1]?.row || [];
+  weekTimetableCache = { key, rows };
+  return rows;
+}
+
+async function guessTechHome(classId, period, regularTimetable, makeupTimetable) {
+  const regularForClass = regularTimetable[classId] || {};
+  const regularHere = ((regularForClass[todayWeekdayKo()] || {})[String(period)] ?? "").trim();
+  if (TECH_HOME_KINDS.includes(regularHere)) return regularHere;
+
+  const count = { 기술: 0, 가정: 0 };
+  Object.values(regularForClass).forEach((byPer) =>
+    Object.values(byPer).forEach((subj) => {
+      if (subj in count) count[subj]++;
+    })
+  );
+  const majority = count.기술 >= count.가정 ? "기술" : "가정";
+  if (!count.기술 || !count.가정) return count.기술 || count.가정 ? majority : TECH_HOME;
+
+  try {
+    const rows = await loadWeekTimetable(classId);
+    const byDay = {};
+    rows.forEach((row) => {
+      (byDay[row.ALL_TI_YMD] ??= {})[row.PERIO] = (row.ITRT_CNTNT ?? "").trim();
+    });
+    const missing = new Set();
+    Object.entries(byDay).forEach(([ymd, byPer]) => {
+      const iso = `${ymd.slice(0, 4)}-${ymd.slice(4, 6)}-${ymd.slice(6, 8)}`;
+      const makeup = (makeupTimetable[iso] || {})[classId] || {};
+      const weekday = WEEKDAY_KO_FULL[new Date(`${iso}T00:00:00`).getDay()];
+      Object.entries(regularForClass[weekday] || {}).forEach(([per, subj]) => {
+        if (!TECH_HOME_KINDS.includes(subj)) return;
+        const actual = (makeup[per] ?? "").trim() || byPer[per] || "";
+        if (actual !== TECH_HOME && !TECH_HOME_KINDS.includes(actual)) missing.add(subj);
+      });
+    });
+    if (missing.size === 1) return [...missing][0];
+  } catch (err) {
+    // 주간 시간표를 못 받으면 ③으로 추정
+  }
+  return majority;
+}
+
 async function fetchTimetable(classId) {
   const container = document.querySelector("#timetable-calendar .timetable-half .content");
   try {
@@ -216,11 +275,20 @@ async function fetchTimetable(classId) {
     const makeupTimetable = await loadMakeupTimetable();
     const makeupForToday = (makeupTimetable[todayIso()] || {})[classId] || {};
 
+    const subjects = {};
+    for (let period = 1; period <= 7; period++) {
+      const neisSubject = (byPeriod[period] ?? "").trim();
+      const makeupSubject = (makeupForToday[String(period)] ?? "").trim();
+      let subject = makeupSubject || neisSubject;
+      if (subject === TECH_HOME) {
+        subject = await guessTechHome(classId, period, regularTimetable, makeupTimetable);
+      }
+      subjects[period] = subject;
+    }
+
     container.innerHTML = Array.from({ length: 7 }, (_, i) => i + 1)
       .map((period) => {
-        const neisSubject = (byPeriod[period] ?? "").trim();
-        const makeupSubject = (makeupForToday[String(period)] ?? "").trim();
-        const subject = makeupSubject || neisSubject;
+        const subject = subjects[period];
         const regularSubject = (regularForToday[String(period)] ?? "").trim();
         const changed = subject && regularSubject && subject !== regularSubject;
         const style = changed ? ' style="color:#ff4d4f;font-weight:600;"' : "";
