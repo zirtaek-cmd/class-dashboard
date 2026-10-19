@@ -586,31 +586,52 @@ function subscribeBoard(classId) {
   });
 }
 
-// 칠판은 하루 종일 켜 두므로 5분마다 확인해서 날짜가 바뀌었거나 새로 배포된 파일이 있으면 새로고침한다.
+// 칠판은 하루 종일 켜 두므로 5분마다 확인해서 날짜가 바뀌었거나 새 코드가 배포되면 새로고침하고,
+// 정규·보정 시간표만 바뀌었으면 새로고침 없이 시간표 부분만 다시 그린다.
 // (긴 setTimeout은 컴퓨터가 절전에 들어가면 밀려서 자정 새로고침이 안 될 수 있음)
-// 처음 비교값은 브라우저 캐시(지금 실행 중인 파일과 같은 것)에서, 확인은 서버에서 받는다.
-// cache: "reload"는 받은 새 파일로 캐시도 갱신해서 새로고침 때 옛 app.js가 다시 쓰이지 않게 한다.
+// 처음 비교값은 브라우저 캐시(지금 실행 중인 파일과 같은 것)에서, 확인은 서버에 바뀌었는지 물어서 받는다.
+// cache: "no-cache"는 안 바뀌었으면 내용 없이 응답받고(데이터 거의 안 씀), 바뀌었으면 받은 새 파일로 캐시도
+// 갱신해서 새로고침 때 옛 app.js가 다시 쓰이지 않게 한다.
 const UPDATE_CHECK_MS = 5 * 60 * 1000;
-const WATCHED_FILES = ["index.html", "app.js", "../data/regular-timetable.json", "../data/makeup-timetable.json"];
+const CODE_FILES = ["index.html", "app.js"];
+const DATA_FILES = ["../data/regular-timetable.json", "../data/makeup-timetable.json"];
 
-async function readWatchedFiles(cache) {
-  return Promise.all(WATCHED_FILES.map((f) => fetch(f, { cache }).then((res) => (res.ok ? res.text() : null))));
+async function readFiles(files, cache) {
+  return Promise.all(files.map((f) => fetch(f, { cache }).then((res) => (res.ok ? res.text() : null))));
+}
+
+function anyChanged(before, now) {
+  return now.some((text, i) => text !== null && before[i] !== null && text !== before[i]);
 }
 
 function scheduleAutoReload() {
   const loadedDay = todayIso();
-  const loadedFiles = readWatchedFiles("default").catch(() => null);
+  const loadedCode = readFiles(CODE_FILES, "default").catch(() => null);
+  let loadedData = readFiles(DATA_FILES, "default").catch(() => null);
   setInterval(async () => {
-    if (!document.getElementById("board-modal-overlay").hidden) return;
-    if (todayIso() !== loadedDay) {
-      location.reload();
-      return;
-    }
     try {
-      const before = await loadedFiles;
-      const now = await readWatchedFiles("reload");
-      if (before && now.some((text, i) => text !== null && before[i] !== null && text !== before[i])) {
-        location.reload();
+      const modalOpen = !document.getElementById("board-modal-overlay").hidden;
+      if (todayIso() !== loadedDay) {
+        // 인터넷이 안 될 때 새로고침하면 오류 화면에 멈추므로, 서버에 닿을 때만 새로고침한다
+        const res = await fetch("index.html", { cache: "no-cache" });
+        if (res.ok && !modalOpen) location.reload();
+        return;
+      }
+      const beforeCode = await loadedCode;
+      const nowCode = await readFiles(CODE_FILES, "no-cache");
+      if (beforeCode && anyChanged(beforeCode, nowCode)) {
+        if (!modalOpen) location.reload();
+        return;
+      }
+      const beforeData = await loadedData;
+      const nowData = await readFiles(DATA_FILES, "no-cache");
+      const classId = getUrlClassId() || getStoredClassId();
+      const dashboardShown = !document.getElementById("dashboard").hidden;
+      if (beforeData && anyChanged(beforeData, nowData) && classId && dashboardShown) {
+        regularTimetableCache = null;
+        makeupTimetableCache = null;
+        loadedData = nowData;
+        fetchTimetable(classId);
       }
     } catch (err) {
       // 인터넷이 잠깐 끊기면 다음 확인 때 다시 본다
