@@ -318,6 +318,7 @@
     onAuthStateChanged,
     setPersistence,
     browserSessionPersistence,
+    browserLocalPersistence,
   } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
   import {
     doc,
@@ -345,7 +346,15 @@
   const NEIS_REFETCH_AFTER = Date.parse("2026-10-19T09:35:00+09:00");
 
   // 관리자 페이지와 같은 세션 로그인(sessionStorage)을 이어받는다.
-  setPersistence(auth, browserSessionPersistence);
+  // 단, 교무수첩 앱에서 연 브라우저(?keep=1)는 로그인을 유지한다. 한 번 그렇게 열리면 그 브라우저는 기억하고, 로그아웃하면 해제.
+  // 그 밖에는 창을 닫으면 로그아웃(교실 공용 PC 대비).
+  const KEEP_LOGIN_KEY = "admin-keep-login";
+  let keepLogin = false;
+  try {
+    if (new URLSearchParams(location.search).has("keep")) localStorage.setItem(KEEP_LOGIN_KEY, "1");
+    keepLogin = localStorage.getItem(KEEP_LOGIN_KEY) === "1";
+  } catch (err) {}
+  setPersistence(auth, keepLogin ? browserLocalPersistence : browserSessionPersistence);
 
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
