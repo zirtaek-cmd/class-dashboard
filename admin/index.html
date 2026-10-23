@@ -572,15 +572,12 @@
 </div>
 
 <script type="module">
-  import { db, auth } from "../firebase-config.js";
+  import { db, auth, forgetKeepLogin } from "./firebase-admin.js";
   import {
     GoogleAuthProvider,
     signInWithPopup,
     signOut,
     onAuthStateChanged,
-    setPersistence,
-    browserSessionPersistence,
-    browserLocalPersistence,
   } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
   import {
     doc,
@@ -596,16 +593,6 @@
   } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
   const ALLOWED_DOMAIN = "@ai.jne.kr";
-
-  // 교무수첩 앱에서 연 브라우저(?keep=1)는 로그인을 유지한다. 한 번 그렇게 열리면 그 브라우저는 기억하고, 로그아웃하면 해제.
-  // 그 밖에는 창을 닫으면 로그아웃(교실 공용 PC 대비).
-  const KEEP_LOGIN_KEY = "admin-keep-login";
-  let keepLogin = false;
-  try {
-    if (new URLSearchParams(location.search).has("keep")) localStorage.setItem(KEEP_LOGIN_KEY, "1");
-    keepLogin = localStorage.getItem(KEEP_LOGIN_KEY) === "1";
-  } catch (err) {}
-  setPersistence(auth, keepLogin ? browserLocalPersistence : browserSessionPersistence);
 
   function todayIso() {
     const d = new Date();
@@ -652,7 +639,7 @@
   });
 
   document.getElementById("logout-btn").addEventListener("click", () => {
-    try { localStorage.removeItem(KEEP_LOGIN_KEY); } catch (err) {}
+    forgetKeepLogin();
     signOut(auth);
   });
 
