@@ -409,6 +409,27 @@ function isNoticeNew(timestamp) {
   return new Date(ms).toDateString() === new Date().toDateString();
 }
 
+// 공지 속 주소(https://…, www.…)는 눌러서 새 탭으로 열 수 있게 링크로 바꾼다.
+// 끝에 붙은 마침표·쉼표·닫는 괄호와 바로 이어 쓴 한글("…com에서")은 주소에서 뺀다.
+const NOTICE_URL_RE = /(https?:\/\/|www\.)[^\s<>"\u3131-\u318E\uAC00-\uD7A3]+/g;
+
+function appendLinkedText(el, text) {
+  let last = 0;
+  for (const m of text.matchAll(NOTICE_URL_RE)) {
+    const url = m[0].replace(/[.,!?;:)\]}'"]+$/, "");
+    el.append(text.slice(last, m.index));
+    const a = document.createElement("a");
+    a.className = "notice-link";
+    a.href = url.startsWith("www.") ? `https://${url}` : url;
+    a.target = "_blank";
+    a.rel = "noopener noreferrer";
+    a.textContent = url;
+    el.appendChild(a);
+    last = m.index + url.length;
+  }
+  el.append(text.slice(last));
+}
+
 function renderNotices(container, noticesByScope, labels) {
   container.innerHTML = "";
 
@@ -442,7 +463,7 @@ function renderNotices(container, noticesByScope, labels) {
 
       const text = document.createElement("span");
       text.className = "notice-text";
-      text.textContent = item.text;
+      appendLinkedText(text, item.text);
       div.appendChild(text);
 
       container.appendChild(div);
